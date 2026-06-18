@@ -1,0 +1,1 @@
+//Affichage d'une variante
