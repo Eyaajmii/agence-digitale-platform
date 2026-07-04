@@ -1,5 +1,4 @@
 // app/dashboard/page.tsx
-
 import {
   Users,
   FileText,
@@ -7,8 +6,9 @@ import {
   UserCog,
   ArrowRight,
 } from "lucide-react";
+import { auth } from "@/auth";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
   const stats = [
     {
       label: "Clients actifs",
@@ -41,6 +41,7 @@ export default function DashboardPage() {
       icon: UserCog,
       color: "text-sky-500",
       bg: "bg-sky-50",
+      onlyManager: true,
     },
   ];
 
@@ -93,7 +94,9 @@ export default function DashboardPage() {
       temps: "Hier",
     },
   ];
-
+  const session = await auth();
+  console.log(session?.user);
+  const role = session?.user?.role;
   return (
     <div className="space-y-8">
 
@@ -110,7 +113,12 @@ export default function DashboardPage() {
 
       {/* KPI */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => {
+        {stats
+        .filter(stat => {
+          if (stat.onlyManager && role !== "Manager") return false;
+          return true;
+        })
+        .map((stat) => {
           const Icon = stat.icon;
 
           return (

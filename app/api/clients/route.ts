@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { auth } from "@/auth";
 
 async function makeSupabase() {
   const cookieStore =await cookies()
@@ -14,6 +15,13 @@ async function makeSupabase() {
 // ─── GET /api/clients ────────────────────────────────────────
 // Retourne la liste paginée des clients du manager connecté
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
   const supabase = makeSupabase()
   const { searchParams } = new URL(req.url)
 
@@ -27,10 +35,12 @@ export async function GET(req: NextRequest) {
     .from('clients')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .range(from, to)
+    if (session.user.role === "Collaborateur") {
+      query = query.eq("collaborateur_id", session.user.id);
+    }
 
   if (search) query = query.ilike('nom', `%${search}%`)
-
+  query = query.range(from, to);
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
