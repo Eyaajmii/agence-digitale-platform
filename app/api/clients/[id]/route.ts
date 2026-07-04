@@ -13,14 +13,15 @@ async function makeSupabase() {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = makeSupabase()
 
   const { data, error } = await (await supabase)
     .from('clients')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error) return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
@@ -31,8 +32,9 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = makeSupabase()
 
   const { data: { user } } = await (await supabase).auth.getUser()
@@ -54,7 +56,7 @@ export async function PATCH(
   const { data, error } = await (await supabase)
     .from('clients')
     .update(updates)
-    .eq('id', params.id)
+    .eq('id', id)
     .select()
     .single()
 
@@ -65,8 +67,9 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = makeSupabase()
 
   const { data: { user } } = await (await supabase).auth.getUser()
@@ -75,7 +78,7 @@ export async function DELETE(
   const { error } = await (await supabase)
     .from('clients')
     .delete()
-    .eq('id', params.id)
+    .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 

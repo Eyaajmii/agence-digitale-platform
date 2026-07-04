@@ -1,11 +1,8 @@
 "use client";
-
-// app/login/page.tsx
-import { useState } from "react";
+import { Suspense,useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-
-export default function LoginPage() {
+function LoginContent(){
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -178,6 +175,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
 
