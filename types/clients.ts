@@ -51,7 +51,8 @@ export interface Client {
   secteur:           ClientSecteur | null 
   ton:               ClientTon | null     
   mots_interdits:    string[] | null      
-  exemples:          Exemple[] | null    
+  exemples:          Exemple[] | null
+  email:string | null    
   created_at:        string | null       
   manager_id:        string | null        
   collaborateur_id:  string | null
@@ -70,6 +71,7 @@ export interface ClientFormData {
   ton:            ClientTon
   mots_interdits: string     
   exemples:       Exemple[]
+  email:string
   collaborateur_id:string
 }
 export interface PaginatedClients {

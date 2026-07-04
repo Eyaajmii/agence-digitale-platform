@@ -35,23 +35,23 @@ export async function getCalendrierEvents(): Promise<CalendrierEvent[]> {
 }
 
 export async function addCalendrierEvent(
-  contenuId: string,
-  clientId: string,
+  content_id: string,
+  client_id: string,
   date: string
 ): Promise<CalendrierEvent> {
   const supabase = db()
   const { data, error } = await supabase
     .from('calendrier')
     .insert([{
-      contenu_id: contenuId,
-      client_id: clientId,
+      content_id: content_id,
+      client_id: client_id,
       date,
       statut: 'planifié',
     }])
     .select(`
       id,
       client_id,
-      contenu_id,
+      content_id,
       date,
       statut,
       created_at,

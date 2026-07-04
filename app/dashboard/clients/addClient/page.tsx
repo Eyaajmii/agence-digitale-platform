@@ -15,6 +15,7 @@ const emptyForm: ClientFormData = {
   mots_interdits: '',
   exemples:       [],
   collaborateur_id:'',
+  email:''
 }
 
 export default function NewClientPage() {
@@ -107,17 +108,48 @@ export default function NewClientPage() {
               value={form.nom}
               onChange={(e) => set('nom', e.target.value)}
               placeholder="Ex : Boutique Élara"
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-black outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
             />
           </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-zinc-700">
+              Email du client 
+            </label>
+            <input
+              type="text"
+              required
+              value={form.email}
+              onChange={(e) => set('email', e.target.value)}
+              placeholder="Ex : contact@gmail.com"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-black outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-zinc-700">
+              Collaborateur
+            </label>
 
+            <select
+              value={form.collaborateur_id}
+              onChange={(e) => set("collaborateur_id", e.target.value)}
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-black"
+            >
+              <option value="">Sélectionner un collaborateur</option>
+
+              {collaborateurs.map((collab) => (
+                <option key={collab.id} value={collab.id}>
+                  {collab.profiles?.nom} {collab.profiles?.prenom}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="block text-sm font-medium text-zinc-700">Secteur</label>
               <select
                 value={form.secteur}
                 onChange={(e) => set('secteur', e.target.value as ClientFormData['secteur'])}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-black outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
               >
                 {SECTOR_OPTIONS.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -130,7 +162,7 @@ export default function NewClientPage() {
               <select
                 value={form.ton}
                 onChange={(e) => set('ton', e.target.value as ClientFormData['ton'])}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-black outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
               >
                 {TON_OPTIONS.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -155,7 +187,7 @@ export default function NewClientPage() {
               value={form.mots_interdits}
               onChange={(e) => set('mots_interdits', e.target.value)}
               placeholder="pas cher, discount, promo…"
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm text-black  outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
             />
             <p className="text-xs text-zinc-400">Séparés par des virgules</p>
           </div>

@@ -157,6 +157,7 @@ function ClientEditForm({
     mots_interdits: (client.mots_interdits ?? []).join(", "),
     exemples: client.exemples ?? [],
     collaborateur_id: client.collaborateur_id ?? "",
+    email:client.email??"",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -237,7 +238,18 @@ function ClientEditForm({
             className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
           />
         </div>
-
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-zinc-700">
+            Email <span className="text-red-400">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            value={form.email}
+            onChange={(e) => set("email", e.target.value)}
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-zinc-700">

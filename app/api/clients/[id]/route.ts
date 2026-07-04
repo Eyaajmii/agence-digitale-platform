@@ -41,7 +41,7 @@ export async function PATCH(
   const body = await req.json()
 
   // On accepte uniquement les colonnes de la table
-  const allowed = ['nom', 'secteur', 'ton', 'mots_interdits', 'exemples']
+  const allowed = ['nom', 'secteur', 'ton', 'mots_interdits', 'exemples','email']
   const updates: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]

@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useGenerate } from "@/hooks/usegenerate";
 import { createBrowserClient } from "@supabase/ssr";
+import { addCalendrierEvent } from "@/lib/supabase/calendrier";
 
 const PLATFORMS = [
   { value: "Twitter", label: "𝕏 Twitter", maxChars: 280 },
@@ -26,7 +27,10 @@ export default function GeneratePage() {
   const [platform, setPlatform] = useState("Instagram");
   const [objective, setObjective] = useState("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-
+  const [contenuIds, setContenuIds] = useState<Record<number, string>>({});
+  const [planningIndex, setPlanningIndex] = useState<number | null>(null);
+  const [planningDate, setPlanningDate] = useState("");
+  const [planning, setPlanning] = useState(false);
   const {
     generate,
     cancel,
@@ -54,28 +58,38 @@ export default function GeneratePage() {
 
   const handleSubmit = () => {
     if (!clientId || !platform || !objective.trim()) return;
+    setContenuIds({});
     generate({ clientId, platform, objective });
+  };
+  const saveContenu = async (text: string, index: number): Promise<string> => {
+    if (contenuIds[index]) return contenuIds[index]; 
+  
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  
+    const { data, error } = await supabase
+      .from("contenus")
+      .insert({
+        client_id: clientId,
+        plateforme: platform,
+        statut: "Apprové",
+        texte: text,
+        variantes: variants,
+        objective: objective,
+      })
+      .select("id")
+      .single();
+  
+    if (error) throw error;
+  
+    setContenuIds((prev) => ({ ...prev, [index]: data.id }));
+    return data.id;
   };
   const handleValidate = async (text: string, index: number) => {
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-  
-      const { error } = await supabase
-        .from("contenus")
-        .insert({
-          client_id: clientId,
-          plateforme: platform,
-          statut: "Apprové",
-          texte: text,
-          variantes: variants,
-          objective: objective
-        });
-  
-      if (error) throw error;
-  
+      await saveContenu(text, index);
       alert(`✅ Variante ${index + 1} enregistrée !`);
     } catch (err) {
       console.error(err);
@@ -90,6 +104,28 @@ export default function GeneratePage() {
   const selectedPlatform = PLATFORMS.find((p) => p.value === platform);
   const canSubmit = clientId && platform && objective.trim() && !isStreaming;
 
+  const openPlanifier = (index: number) => {
+    setPlanningIndex(index);
+    setPlanningDate(new Date().toISOString().slice(0, 10)); // aujourd'hui par défaut
+  };
+
+  const handleConfirmPlanifier = async () => {
+    if (planningIndex === null || !planningDate) return;
+    setPlanning(true);
+    try {
+      const id = await saveContenu(variants[planningIndex], planningIndex);
+      await addCalendrierEvent(id, clientId, planningDate);
+      setPlanningIndex(null);
+      alert(
+        `📅 Variante ${planningIndex + 1} planifiée pour le ${planningDate}`
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la planification");
+    } finally {
+      setPlanning(false);
+    }
+  };
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       <div>
@@ -247,13 +283,54 @@ export default function GeneratePage() {
                   <button
                     onClick={() => handleValidate(variant, i)}
                     //disabled={!contentId}
-                    className="flex-1 text-xs py-2 rounded-lg bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 transition-colors font-medium disabled:opacity-40"
+                    className="flex-1 text-xs py-2 rounded-lg bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-700 transition-colors font-medium"
                   >
                     ✅ Valider
+                  </button>
+                  <button
+                    onClick={() => openPlanifier(i)}
+                    className="flex-1 text-xs py-2 rounded-lg bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-700 transition-colors font-medium"
+                  >
+                    📅 Planifier
                   </button>
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {planningIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-base font-semibold text-gray-900">
+              Planifier la variante {planningIndex + 1}
+            </h2>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Date de publication
+              </label>
+              <input
+                type="date"
+                value={planningDate}
+                onChange={(e) => setPlanningDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleConfirmPlanifier}
+                disabled={!planningDate || planning}
+                className="flex-1 bg-violet-600 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors"
+              >
+                {planning ? "Planification…" : "Confirmer"}
+              </button>
+              <button
+                onClick={() => setPlanningIndex(null)}
+                className="flex-1 border border-gray-200 text-gray-600 text-sm font-medium py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+            </div>
           </div>
         </div>
       )}

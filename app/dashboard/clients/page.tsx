@@ -257,6 +257,13 @@ export default function ClientsPage() {
                       >
                         {deletingId === client.id ? "…" : "Supprimer"}
                       </button>
+                      <a href={`/api/auth/meta?clientId=${client.id}`}>
+                        Connecter Meta
+                      </a>
+
+                      <a href={`/api/auth/google?clientId=${client.id}`}>
+                        Connecter Google
+                      </a>
                     </div>
                   </td>
                 </tr>

@@ -147,6 +147,7 @@ function formToRow(form: ClientFormData) {
                       .map((m) => m.trim())
                       .filter(Boolean),
     exemples:       form.exemples,
+    email:form.email,
     collaborateur_id: form.collaborateur_id,
   }
 }
