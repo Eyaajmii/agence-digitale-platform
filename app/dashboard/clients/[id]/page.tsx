@@ -46,6 +46,11 @@ function ClientView({
                   {client.ton}
                 </span>
               )}
+              {client.statut && (
+                <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 capitalize">
+                  {client.statut}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
@@ -158,6 +163,7 @@ function ClientEditForm({
     exemples: client.exemples ?? [],
     collaborateur_id: client.collaborateur_id ?? "",
     email:client.email??"",
+    statut:client.statut??"",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -285,6 +291,21 @@ function ClientEditForm({
                   {t}
                 </option>
               ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-zinc-700">
+              Statut
+            </label>
+            <select
+              value={form.statut}
+              onChange={(e) =>
+                set("statut", e.target.value as ClientFormData["statut"])
+              }
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500"
+            >
+              <option value="actif" >Actif</option>
+              <option value="en attente" >En attente</option>
             </select>
           </div>
         </div>

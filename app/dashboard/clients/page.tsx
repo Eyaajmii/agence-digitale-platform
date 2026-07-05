@@ -7,18 +7,21 @@ import { getClients } from "@/lib/supabase/client";
 import { deleteClient } from "@/lib/supabase/client";
 import type { Client, PaginatedClients } from "@/types/clients";
 
+// Teintes dérivées de l'identité Lezarts Digital (magenta / violet signal)
+// + quelques teintes complémentaires désaturées pour garder les secteurs
+// lisibles sans retomber sur la palette Tailwind par défaut.
 const SECTOR_COLORS: Record<string, string> = {
-  "E-commerce": "bg-violet-50 text-violet-700",
-  Immobilier: "bg-blue-50 text-blue-700",
-  Restauration: "bg-orange-50 text-orange-700",
-  "Mode & Beauté": "bg-pink-50 text-pink-700",
-  "Tech & SaaS": "bg-cyan-50 text-cyan-700",
-  "Santé & Bien-être": "bg-green-50 text-green-700",
-  Finance: "bg-emerald-50 text-emerald-700",
-  Éducation: "bg-amber-50 text-amber-700",
-  Tourisme: "bg-sky-50 text-sky-700",
-  Sport: "bg-lime-50 text-lime-700",
-  Autre: "bg-zinc-100 text-zinc-600",
+  "E-commerce": "bg-[#6C4CFF]/10 text-[#6C4CFF]",
+  Immobilier: "bg-[#2D6FF2]/10 text-[#2D6FF2]",
+  Restauration: "bg-[#E8823C]/10 text-[#B85F1F]",
+  "Mode & Beauté": "bg-[#FF3D7F]/10 text-[#FF3D7F]",
+  "Tech & SaaS": "bg-[#2BB7C4]/10 text-[#1A8A95]",
+  "Santé & Bien-être": "bg-[#3FAE6B]/10 text-[#2E8253]",
+  Finance: "bg-[#1A1720]/10 text-[#1A1720]",
+  Éducation: "bg-[#D6A32C]/10 text-[#95721B]",
+  Tourisme: "bg-[#3E9BD6]/10 text-[#2A749F]",
+  Sport: "bg-[#8CC63F]/10 text-[#5E8B24]",
+  Autre: "bg-[#9C96B5]/15 text-[#6B6579]",
 };
 
 function getInitials(nom: string) {
@@ -31,11 +34,11 @@ function getInitials(nom: string) {
 
 function getAvatarColor(nom: string) {
   const colors = [
-    "bg-violet-100 text-violet-700",
-    "bg-blue-100 text-blue-700",
-    "bg-teal-100 text-teal-700",
-    "bg-pink-100 text-pink-700",
-    "bg-amber-100 text-amber-700",
+    "bg-[#6C4CFF]/10 text-[#6C4CFF]",
+    "bg-[#2D6FF2]/10 text-[#2D6FF2]",
+    "bg-[#2BB7C4]/10 text-[#1A8A95]",
+    "bg-[#FF3D7F]/10 text-[#FF3D7F]",
+    "bg-[#D6A32C]/10 text-[#95721B]",
   ];
   return colors[nom.charCodeAt(0) % colors.length];
 }
@@ -80,20 +83,22 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-6xl mx-auto">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto font-[Inter,sans-serif]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Clients</h1>
+          <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
+            Clients
+          </h1>
           {result && (
-            <p className="mt-0.5 text-sm text-zinc-500">
+            <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
               {result.total} client{result.total !== 1 ? "s" : ""}
             </p>
           )}
         </div>
         <Link
           href="/dashboard/clients/addClient"
-          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
         >
           + Nouveau client
         </Link>
@@ -106,11 +111,11 @@ export default function ClientsPage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Rechercher un client…"
-          className="flex-1 rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+          className="flex-1 rounded-lg border border-[#1A1720]/10 bg-white px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
         />
         <button
           type="submit"
-          className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+          className="rounded-lg border border-[#1A1720]/10 px-4 py-2 text-sm font-medium text-[#6B6579] hover:bg-[#1A1720]/5 transition-colors"
         >
           Rechercher
         </button>
@@ -122,7 +127,7 @@ export default function ClientsPage() {
               setSearchInput("");
               setPage(1);
             }}
-            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-600"
+            className="rounded-lg border border-[#1A1720]/10 px-3 py-2 text-sm text-[#9C96B5] hover:text-[#1A1720]"
           >
             ✕
           </button>
@@ -132,11 +137,11 @@ export default function ClientsPage() {
       {/* Contenu */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF3D7F] border-t-transparent" />
         </div>
       ) : result?.data.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-200 py-20 text-center">
-          <p className="text-zinc-400 text-sm">
+        <div className="rounded-xl border border-dashed border-[#1A1720]/15 py-20 text-center">
+          <p className="text-[#9C96B5] text-sm">
             {search
               ? `Aucun résultat pour « ${search} »`
               : "Aucun client pour le moment."}
@@ -144,17 +149,17 @@ export default function ClientsPage() {
           {!search && (
             <Link
               href="/dashboard/clients/addClient"
-              className="mt-3 inline-block text-sm font-medium text-violet-600 hover:underline"
+              className="mt-3 inline-block text-sm font-medium text-[#FF3D7F] hover:underline"
             >
               Créer votre premier client →
             </Link>
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-100 bg-zinc-50 text-xs font-medium uppercase tracking-wide text-zinc-400">
+              <tr className="border-b border-[#1A1720]/10 bg-[#F4F5F1] text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
                 <th className="px-4 py-3 text-left">Client</th>
                 <th className="hidden px-4 py-3 text-left sm:table-cell">
                   Secteur
@@ -168,20 +173,24 @@ export default function ClientsPage() {
                 <th className="hidden px-4 py-3 text-left lg:table-cell">
                   Collaborateur
                 </th>
+                <th className="hidden px-4 py-3 text-left lg:table-cell">
+                  Statut
+                </th>
                 <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-right">Connexion</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-[#1A1720]/5">
               {result?.data.map((client) => (
                 <tr
                   key={client.id}
-                  className="hover:bg-zinc-50 transition-colors"
+                  className="hover:bg-[#F4F5F1]/60 transition-colors"
                 >
                   {/* Nom + initiales */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold ${getAvatarColor(
+                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-[Space_Grotesk,sans-serif] font-semibold ${getAvatarColor(
                           client.nom
                         )}`}
                       >
@@ -189,7 +198,7 @@ export default function ClientsPage() {
                       </div>
                       <Link
                         href={`/dashboard/clients/${client.id}`}
-                        className="font-medium text-zinc-900 hover:text-violet-600 transition-colors"
+                        className="font-medium text-[#1A1720] hover:text-[#FF3D7F] transition-colors"
                       >
                         {client.nom}
                       </Link>
@@ -202,69 +211,78 @@ export default function ClientsPage() {
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           SECTOR_COLORS[client.secteur] ??
-                          "bg-zinc-100 text-zinc-600"
+                          "bg-[#1A1720]/5 text-[#6B6579]"
                         }`}
                       >
                         {client.secteur}
                       </span>
                     ) : (
-                      <span className="text-zinc-300">—</span>
+                      <span className="text-[#D9D5E0]">—</span>
                     )}
                   </td>
 
                   {/* Ton */}
-                  <td className="hidden px-4 py-3 text-zinc-500 capitalize md:table-cell">
-                    {client.ton ?? <span className="text-zinc-300">—</span>}
+                  <td className="hidden px-4 py-3 text-[#6B6579] capitalize md:table-cell">
+                    {client.ton ?? <span className="text-[#D9D5E0]">—</span>}
                   </td>
 
                   {/* Nb exemples */}
                   <td className="hidden px-4 py-3 lg:table-cell">
-                    <span className="text-zinc-400 text-xs">
+                    <span className="text-[#9C96B5] text-xs font-[IBM_Plex_Mono,monospace]">
                       {client.exemples?.length ?? 0} exemple
                       {(client.exemples?.length ?? 0) !== 1 ? "s" : ""}
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 md:table-cell">
                     {client.collaborateurs?.profiles ? (
-                      <>
+                      <span className="text-[#1A1720]">
                         {client.collaborateurs.profiles.nom}{" "}
                         {client.collaborateurs.profiles.prenom}
-                      </>
+                      </span>
                     ) : (
-                      <span className="text-red-400">Pas encore affecté</span>
+                      <span className="text-[#FF3D7F]">Pas encore affecté</span>
                     )}
                   </td>
-
+                  <td className="hidden px-4 py-3 text-[#6B6579] capitalize md:table-cell">
+                    {client.statut ?? <span className="text-[#D9D5E0]">—</span>}
+                  </td>
                   {/* Actions */}
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex flex-wrap items-center justify-end gap-1">
                       <Link
                         href={`/dashboard/clients/${client.id}`}
-                        className="rounded-md px-2.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 transition-colors"
+                        className="rounded-md px-2.5 py-1 text-xs text-[#6B6579] hover:bg-[#1A1720]/5 transition-colors"
                       >
                         Voir
                       </Link>
                       <Link
                         href={`/dashboard/clients/${client.id}?edit=1`}
-                        className="rounded-md px-2.5 py-1 text-xs text-violet-600 hover:bg-violet-50 transition-colors"
+                        className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
                       >
                         Modifier
                       </Link>
                       <button
                         onClick={() => handleDelete(client)}
                         disabled={deletingId === client.id}
-                        className="rounded-md px-2.5 py-1 text-xs text-zinc-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                        className="rounded-md px-2.5 py-1 text-xs text-[#9C96B5] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
                       >
                         {deletingId === client.id ? "…" : "Supprimer"}
                       </button>
-                      <a href={`/api/auth/meta?clientId=${client.id}`}>
-                        Connecter Meta
-                      </a>
-
-                      <a href={`/api/auth/google?clientId=${client.id}`}>
-                        Connecter Google
-                      </a>
                     </div>
+                  </td>
+                  <td>
+                  <a
+                        href={`/api/auth/meta?clientId=${client.id}`}
+                        className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#2D6FF2]/40 hover:text-[#2D6FF2] transition-colors"
+                      >
+                        Meta
+                      </a>
+                      <a
+                        href={`/api/auth/google?clientId=${client.id}`}
+                        className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#D6A32C]/50 hover:text-[#95721B] transition-colors"
+                      >
+                        Google
+                      </a>
                   </td>
                 </tr>
               ))}
@@ -276,21 +294,21 @@ export default function ClientsPage() {
       {/* Pagination */}
       {result && result.total_pages > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <p className="text-zinc-400">
+          <p className="text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
             Page {result.page} / {result.total_pages}
           </p>
           <div className="flex gap-2">
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
             >
               ← Précédent
             </button>
             <button
               disabled={page === result.total_pages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
             >
               Suivant →
             </button>

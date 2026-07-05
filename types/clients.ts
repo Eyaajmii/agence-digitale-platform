@@ -52,7 +52,8 @@ export interface Client {
   ton:               ClientTon | null     
   mots_interdits:    string[] | null      
   exemples:          Exemple[] | null
-  email:string | null    
+  email:string | null
+  statut:string | null    
   created_at:        string | null       
   manager_id:        string | null        
   collaborateur_id:  string | null
@@ -66,6 +67,7 @@ export interface Client {
 }
 
 export interface ClientFormData {
+  statut: string
   nom:            string
   secteur:        ClientSecteur
   ton:            ClientTon

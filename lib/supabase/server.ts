@@ -9,3 +9,5 @@ export const supabaseAdmin = createClient(
 // Exemple usage API
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;
 export const RESEND_API_KEY = process.env.RESEND_API_KEY!;
+
+export { createClient };

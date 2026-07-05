@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const body = await req.json()
-  const { nom, secteur, ton, mots_interdits, exemples,email } = body
+  const { nom, secteur, ton, mots_interdits, exemples,email ,statut} = body
 
   if (!nom) {
     return NextResponse.json({ error: 'Le champ nom est obligatoire' }, { status: 422 })
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
     .from('clients')
     .insert([{
       nom,
+      statut:statut??null,
       secteur:        secteur        ?? null,
       ton:            ton            ?? null,
       mots_interdits: mots_interdits ?? [],

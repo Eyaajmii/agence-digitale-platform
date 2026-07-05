@@ -88,7 +88,7 @@ export async function addClient(form: ClientFormData): Promise<Client> {
   // manager_id = l'id de l'user NextAuth
   // selon ta config NextAuth, l'id est dans session.user.id
   const managerId = (session.user as { id?: string }).id ?? session.user.email
- 
+  console.log("FORM =", form);
   const { data, error } = await supabase
     .from('clients')
     .insert([{ ...formToRow(form), manager_id: managerId }])
@@ -149,5 +149,6 @@ function formToRow(form: ClientFormData) {
     exemples:       form.exemples,
     email:form.email,
     collaborateur_id: form.collaborateur_id,
+    statut:form.statut,
   }
 }
