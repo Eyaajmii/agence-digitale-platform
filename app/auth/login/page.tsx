@@ -1,26 +1,40 @@
 "use client";
-import { Suspense,useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-function LoginContent(){
+
+function Waveform() {
+  const bars = [4, 9, 6, 12, 5, 8, 3, 10, 6];
+  return (
+    <div className="flex items-end gap-[3px] h-4">
+      {bars.map((h, i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full bg-[#FF3D7F]/50"
+          style={{ height: `${h}px` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const searchParams = useSearchParams();
 
   const isVerify = searchParams.get("verify") === "1";
-  const isError  = searchParams.get("error")  === "1";
+  const isError = searchParams.get("error") === "1";
 
-  // ── Magic link via Resend ──────────────────────────────────
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await signIn("resend", { email, redirect: false ,callbackUrl: "/dashboard"});
+    await signIn("resend", { email, redirect: false, callbackUrl: "/dashboard" });
     setEmailSent(true);
     setLoading(false);
   }
 
-  // ── Google OAuth ───────────────────────────────────────────
   async function handleGoogle() {
     setLoading(true);
     await signIn("google", { callbackUrl: "/dashboard" });
@@ -29,18 +43,31 @@ function LoginContent(){
   // ── État : email envoyé ────────────────────────────────────
   if (emailSent || isVerify) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0F0F0F]">
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-10 max-w-md w-full text-center space-y-4">
-          <div className="text-4xl">📬</div>
-          <h2 className="text-white text-xl font-semibold">Vérifiez votre email</h2>
-          <p className="text-[#888] text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[#0D0B14] relative overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#FF3D7F]/10 blur-3xl rounded-full" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#6C4CFF]/10 blur-3xl rounded-full" />
+
+        <div className="relative bg-white/[0.03] border border-white/10 rounded-2xl p-10 max-w-md w-full text-center space-y-5 backdrop-blur-xl">
+          <div className="flex justify-center">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#FF3D7F]" />
+            </span>
+          </div>
+          <h2 className="font-[Space_Grotesk,sans-serif] text-white text-xl font-bold tracking-tight">
+            Vérifiez votre email
+          </h2>
+          <p className="text-[#9C96B5] text-sm leading-relaxed">
             Un lien de connexion a été envoyé à{" "}
             <span className="text-white font-medium">{email || "votre adresse"}</span>.
             <br />Cliquez dessus pour vous connecter.
           </p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#9C96B5]/60 font-[IBM_Plex_Mono,monospace]">
+            En attente du signal
+          </p>
           <button
             onClick={() => { setEmailSent(false); setEmail(""); }}
-            className="text-[#6C6FFF] text-sm underline underline-offset-2 hover:text-[#8B8EFF] transition-colors"
+            className="text-[#FF3D7F] text-sm underline underline-offset-4 hover:text-[#FF6B9C] transition-colors"
           >
             Utiliser une autre adresse
           </button>
@@ -51,67 +78,86 @@ function LoginContent(){
 
   // ── Page login principale ──────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-[#0F0F0F]">
+    <div className="min-h-screen flex bg-[#0D0B14]">
 
       {/* ── Panneau gauche — branding ── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-[#111] border-r border-[#1E1E1E]">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden border-r border-white/10">
+        <div className="absolute -top-10 -left-16 w-72 h-72 bg-[#FF3D7F]/15 blur-3xl rounded-full" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#6C4CFF]/15 blur-3xl rounded-full" />
+
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#6C6FFF] flex items-center justify-center">
-            <span className="text-white text-sm font-bold">A</span>
+        <div className="relative flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-[#FF3D7F] flex items-center justify-center">
+            <span className="text-[#0D0B14] font-[Space_Grotesk,sans-serif] font-bold">L</span>
           </div>
-          <span className="text-white font-semibold text-lg">AgenceAI</span>
+          <div>
+            <h2 className="font-[Space_Grotesk,sans-serif] font-bold text-white text-lg tracking-tight">
+              Lezarts Digital
+            </h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+              Digital Marketing Studio
+            </p>
+          </div>
         </div>
 
         {/* Citation centrale */}
-        <div className="space-y-6">
-          <div className="w-12 h-1 bg-[#6C6FFF] rounded-full" />
-          <blockquote className="text-[#DADADA] text-2xl font-light leading-relaxed">
-            "Gérez vos clients, contenus et campagnes depuis un seul endroit."
+        <div className="relative space-y-6">
+          <div className="w-12 h-1 bg-[#FF3D7F] rounded-full" />
+          <blockquote className="font-[Space_Grotesk,sans-serif] text-[#EDEBF5] text-2xl font-light leading-relaxed">
+            Gérez vos clients, contenus et campagnes depuis un seul endroit.
           </blockquote>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#2A2A2A] flex items-center justify-center text-[#6C6FFF] font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FF3D7F] to-[#6C4CFF] flex items-center justify-center text-white font-bold text-sm font-[Space_Grotesk,sans-serif]">
               M
             </div>
             <div>
               <p className="text-white text-sm font-medium">Manager Agence</p>
-              <p className="text-[#555] text-xs">AgenceAI Platform</p>
+              <p className="text-[#9C96B5] text-xs font-[IBM_Plex_Mono,monospace]">Lezarts Digital</p>
             </div>
           </div>
         </div>
 
         {/* Stats bas */}
-        <div className="flex gap-8">
+        <div className="relative flex gap-8">
           {[
             { value: "2 400+", label: "Clients gérés" },
-            { value: "98%",    label: "Satisfaction" },
-            { value: "5 min",  label: "Onboarding" },
+            { value: "98%", label: "Satisfaction" },
+            { value: "5 min", label: "Onboarding" },
           ].map((s) => (
             <div key={s.label}>
-              <p className="text-white font-semibold text-lg">{s.value}</p>
-              <p className="text-[#555] text-xs">{s.label}</p>
+              <p className="text-white font-[Space_Grotesk,sans-serif] font-bold text-lg">{s.value}</p>
+              <p className="text-[#9C96B5] text-[10px] uppercase tracking-wider font-[IBM_Plex_Mono,monospace]">{s.label}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Panneau droit — formulaire ── */}
-      <div className="flex flex-1 items-center justify-center p-6">
+      <div className="flex flex-1 items-center justify-center p-6 relative">
         <div className="w-full max-w-sm space-y-8">
 
           {/* Header */}
-          <div className="space-y-1">
-            <h1 className="text-white text-2xl font-semibold tracking-tight">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#FF3D7F]" />
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#FF3D7F] font-[IBM_Plex_Mono,monospace] font-semibold">
+                Connexion sécurisée
+              </span>
+            </div>
+            <h1 className="font-[Space_Grotesk,sans-serif] text-white text-2xl font-bold tracking-tight">
               Connexion
             </h1>
-            <p className="text-[#666] text-sm">
+            <p className="text-[#9C96B5] text-sm">
               Accédez à votre espace agence
             </p>
           </div>
 
           {/* Erreur */}
           {isError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 text-red-400 text-sm">
+            <div className="bg-[#FF3D7F]/10 border border-[#FF3D7F]/30 rounded-lg px-4 py-3 text-[#FF6B9C] text-sm">
               Une erreur est survenue. Réessayez.
             </div>
           )}
@@ -120,7 +166,7 @@ function LoginContent(){
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-[#1A1A1A] hover:bg-[#222] border border-[#2A2A2A] hover:border-[#3A3A3A] text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-150 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-150 disabled:opacity-50"
           >
             <GoogleIcon />
             Continuer avec Google
@@ -128,15 +174,15 @@ function LoginContent(){
 
           {/* Séparateur */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#2A2A2A]" />
-            <span className="text-[#444] text-xs">ou par email</span>
-            <div className="flex-1 h-px bg-[#2A2A2A]" />
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-[#9C96B5]/60 text-[10px] uppercase tracking-widest font-[IBM_Plex_Mono,monospace]">ou par email</span>
+            <div className="flex-1 h-px bg-white/10" />
           </div>
 
           {/* Magic link form */}
           <form onSubmit={handleEmailSubmit} className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-[#888] text-xs font-medium uppercase tracking-wider">
+              <label className="text-[#9C96B5] text-[10px] font-medium uppercase tracking-[0.15em] font-[IBM_Plex_Mono,monospace]">
                 Adresse email
               </label>
               <input
@@ -145,14 +191,14 @@ function LoginContent(){
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vous@agence.com"
-                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] focus:border-[#6C6FFF] focus:ring-1 focus:ring-[#6C6FFF]/30 rounded-xl px-4 py-3 text-white text-sm placeholder-[#444] outline-none transition-all duration-150"
+                className="w-full bg-white/[0.03] border border-white/10 focus:border-[#FF3D7F] focus:ring-1 focus:ring-[#FF3D7F]/30 rounded-xl px-4 py-3 text-white text-sm placeholder-[#9C96B5]/40 outline-none transition-all duration-150"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-[#6C6FFF] hover:bg-[#7B7EFF] active:bg-[#5A5DFF] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl py-3 text-sm font-semibold transition-all duration-150"
+              className="w-full bg-[#FF3D7F] hover:bg-[#FF5A90] active:bg-[#E62E6C] disabled:opacity-40 disabled:cursor-not-allowed text-[#0D0B14] rounded-xl py-3 text-sm font-bold transition-all duration-150"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -166,26 +212,27 @@ function LoginContent(){
           </form>
 
           {/* Footer */}
-          <p className="text-center text-[#444] text-xs">
-            En vous connectant vous acceptez nos{" "}
-            <a href="/cgu" className="text-[#6C6FFF] hover:underline">
-              conditions d'utilisation
-            </a>
-          </p>
+          <div className="flex items-center justify-between pt-2">
+            <Waveform />
+            <p className="text-center text-[#9C96B5]/50 text-xs">
+              <a href="/cgu" className="text-[#6C4CFF] hover:text-[#8B6FFF] hover:underline">
+                Conditions d'utilisation
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Chargement...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0D0B14]" />}>
       <LoginContent />
     </Suspense>
   );
 }
-
-// ── Icônes inline ──────────────────────────────────────────────
 
 function GoogleIcon() {
   return (

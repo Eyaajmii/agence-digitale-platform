@@ -82,7 +82,12 @@ export default function DashboardLayout({
     (n) =>
       pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href))
   )?.label;
-
+  const filteredNav = nav.filter((item) => {
+    if (roleLabel.toLowerCase() === "collaborateur") {
+      return item.href !== "/dashboard/collaborateurs";
+    }
+    return true;
+  });
   return (
     <div className="min-h-screen bg-[#F4F5F1] font-[Inter,sans-serif]">
       {/* SIDEBAR */}
@@ -114,7 +119,7 @@ export default function DashboardLayout({
             Navigation
           </p>
           <div className="space-y-1">
-            {nav.map(({ href, label, icon: Icon }) => {
+          {filteredNav.map(({ href, label, icon: Icon }) => {
               const active =
                 pathname === href ||
                 (href !== "/dashboard" && pathname.startsWith(href));

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { getClients } from "@/lib/supabase/client";
 import { deleteClient } from "@/lib/supabase/client";
 import type { Client, PaginatedClients } from "@/types/clients";
-
+import { useSession } from "next-auth/react";
 // Teintes dérivées de l'identité Lezarts Digital (magenta / violet signal)
 // + quelques teintes complémentaires désaturées pour garder les secteurs
 // lisibles sans retomber sur la palette Tailwind par défaut.
@@ -50,7 +50,9 @@ export default function ClientsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
+  const { data: session } = useSession();
+  const isCollaborateur =
+    session?.user?.role?.toLowerCase() === "collaborateur";
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -96,12 +98,14 @@ export default function ClientsPage() {
             </p>
           )}
         </div>
-        <Link
-          href="/dashboard/clients/addClient"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
-        >
-          + Nouveau client
-        </Link>
+        {!isCollaborateur && (
+          <Link
+            href="/dashboard/clients/addClient"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
+          >
+            + Nouveau client
+          </Link>
+        )}
       </div>
 
       {/* Recherche */}
@@ -146,7 +150,7 @@ export default function ClientsPage() {
               ? `Aucun résultat pour « ${search} »`
               : "Aucun client pour le moment."}
           </p>
-          {!search && (
+          {!search && !isCollaborateur && (
             <Link
               href="/dashboard/clients/addClient"
               className="mt-3 inline-block text-sm font-medium text-[#FF3D7F] hover:underline"
@@ -255,34 +259,39 @@ export default function ClientsPage() {
                       >
                         Voir
                       </Link>
-                      <Link
-                        href={`/dashboard/clients/${client.id}?edit=1`}
-                        className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
-                      >
-                        Modifier
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(client)}
-                        disabled={deletingId === client.id}
-                        className="rounded-md px-2.5 py-1 text-xs text-[#9C96B5] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
-                      >
-                        {deletingId === client.id ? "…" : "Supprimer"}
-                      </button>
+                      {!isCollaborateur && (
+                        <>
+                          <Link
+                            href={`/dashboard/clients/${client.id}?edit=1`}
+                            className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
+                          >
+                            Modifier
+                          </Link>
+
+                          <button
+                            onClick={() => handleDelete(client)}
+                            disabled={deletingId === client.id}
+                            className="rounded-md px-2.5 py-1 text-xs text-[#9C96B5] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                          >
+                            {deletingId === client.id ? "…" : "Supprimer"}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td>
-                  <a
-                        href={`/api/auth/meta?clientId=${client.id}`}
-                        className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#2D6FF2]/40 hover:text-[#2D6FF2] transition-colors"
-                      >
-                        Meta
-                      </a>
-                      <a
-                        href={`/api/auth/google?clientId=${client.id}`}
-                        className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#D6A32C]/50 hover:text-[#95721B] transition-colors"
-                      >
-                        Google
-                      </a>
+                    <a
+                      href={`/api/auth/meta?clientId=${client.id}`}
+                      className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#2D6FF2]/40 hover:text-[#2D6FF2] transition-colors"
+                    >
+                      Meta
+                    </a>
+                    <a
+                      href={`/api/auth/google?clientId=${client.id}`}
+                      className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#D6A32C]/50 hover:text-[#95721B] transition-colors"
+                    >
+                      Google
+                    </a>
                   </td>
                 </tr>
               ))}
