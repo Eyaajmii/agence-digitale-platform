@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     .from('clients')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    if (session.user.role === "Collaborateur") {
+    if (session.user.role?.toLowerCase() === "collaborateur") {
       query = query.eq("collaborateur_id", session.user.id);
     }
 

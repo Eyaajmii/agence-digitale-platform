@@ -16,15 +16,18 @@ import type {
 } from "@/types/clients";
 import { SECTOR_OPTIONS, TON_OPTIONS, PLATFORM_LABELS } from "@/types/clients";
 import { getCollaborateurs } from "@/lib/supabase/collaborateur";
+import { useSession } from "next-auth/react";
 
 function ClientView({
   client,
   onEdit,
   onDelete,
+  isCollaborateur,
 }: {
   client: Client;
   onEdit: () => void;
   onDelete: () => void;
+  isCollaborateur: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -53,20 +56,24 @@ function ClientView({
               )}
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={onEdit}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors"
-            >
-              Modifier
-            </button>
-            <button
-              onClick={onDelete}
-              className="rounded-lg border border-red-100 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
-            >
-              Supprimer
-            </button>
-          </div>
+
+          {!isCollaborateur && (
+            <div className="flex gap-2">
+              <button
+                onClick={onEdit}
+                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors"
+              >
+                Modifier
+              </button>
+
+              <button
+                onClick={onDelete}
+                className="rounded-lg border border-red-100 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Mots interdits */}
@@ -162,8 +169,8 @@ function ClientEditForm({
     mots_interdits: (client.mots_interdits ?? []).join(", "),
     exemples: client.exemples ?? [],
     collaborateur_id: client.collaborateur_id ?? "",
-    email:client.email??"",
-    statut:client.statut??"",
+    email: client.email ?? "",
+    statut: client.statut ?? "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -304,8 +311,8 @@ function ClientEditForm({
               }
               className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500"
             >
-              <option value="actif" >Actif</option>
-              <option value="en attente" >En attente</option>
+              <option value="actif">Actif</option>
+              <option value="en attente">En attente</option>
             </select>
           </div>
         </div>
@@ -467,7 +474,9 @@ export default function ClientPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(isEdit);
-
+  const { data: session } = useSession();
+  const isCollaborateur =
+    session?.user?.role?.toLowerCase() === "collaborateur";
   useEffect(() => {
     async function load() {
       try {
@@ -544,6 +553,7 @@ export default function ClientPage() {
           client={client}
           onEdit={() => setEditMode(true)}
           onDelete={handleDelete}
+          isCollaborateur={isCollaborateur}
         />
       )}
     </div>
