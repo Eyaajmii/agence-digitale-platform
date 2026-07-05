@@ -21,7 +21,7 @@ function db() {
 // LECTURE
 // ─────────────────────────────────────────────
 
-export async function getClients(
+/*export async function getClients(
   page = 1,
   perPage = 10,
   search = ''
@@ -60,6 +60,26 @@ export async function getClients(
     per_page:    perPage,
     total_pages: Math.ceil((count ?? 0) / perPage),
   }
+}*/
+export async function getClients(
+  page = 1,
+  perPage = 10,
+  search = ""
+): Promise<PaginatedClients> {
+
+  const params = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+    search,
+  });
+
+  const res = await fetch(`/api/clients?${params.toString()}`);
+
+  if (!res.ok) {
+    throw new Error("Erreur lors du chargement des clients");
+  }
+
+  return await res.json();
 }
 
 export async function getClientById(id: string): Promise<Client> {
