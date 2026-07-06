@@ -7,9 +7,8 @@ import { getClients } from "@/lib/supabase/client";
 import { deleteClient } from "@/lib/supabase/client";
 import type { Client, PaginatedClients } from "@/types/clients";
 import { useSession } from "next-auth/react";
-// Teintes dérivées de l'identité Lezarts Digital (magenta / violet signal)
-// + quelques teintes complémentaires désaturées pour garder les secteurs
-// lisibles sans retomber sur la palette Tailwind par défaut.
+import { Mail, MessageCircle, Link as LinkIcon, Check } from "lucide-react";
+
 const SECTOR_COLORS: Record<string, string> = {
   "E-commerce": "bg-[#6C4CFF]/10 text-[#6C4CFF]",
   Immobilier: "bg-[#2D6FF2]/10 text-[#2D6FF2]",
@@ -51,8 +50,10 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { data: session } = useSession();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const isCollaborateur =
     session?.user?.role?.toLowerCase() === "collaborateur";
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -82,6 +83,12 @@ export default function ClientsPage() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  async function handleCopyLink(url: string, id: string) {
+    await navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   }
 
   return (
@@ -237,6 +244,7 @@ export default function ClientsPage() {
                       {(client.exemples?.length ?? 0) !== 1 ? "s" : ""}
                     </span>
                   </td>
+
                   <td className="hidden px-4 py-3 md:table-cell">
                     {client.collaborateurs?.profiles ? (
                       <span className="text-[#1A1720]">
@@ -247,9 +255,11 @@ export default function ClientsPage() {
                       <span className="text-[#FF3D7F]">Pas encore affecté</span>
                     )}
                   </td>
+
                   <td className="hidden px-4 py-3 text-[#6B6579] capitalize md:table-cell">
                     {client.statut ?? <span className="text-[#D9D5E0]">—</span>}
                   </td>
+
                   {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1">
@@ -279,19 +289,77 @@ export default function ClientsPage() {
                       )}
                     </div>
                   </td>
-                  <td>
-                    <a
-                      href={`/api/auth/meta?clientId=${client.id}`}
-                      className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#2D6FF2]/40 hover:text-[#2D6FF2] transition-colors"
-                    >
-                      Meta
-                    </a>
-                    <a
-                      href={`/api/auth/google?clientId=${client.id}`}
-                      className="rounded-md border border-[#1A1720]/10 px-2.5 py-1 text-xs font-[IBM_Plex_Mono,monospace] text-[#6B6579] hover:border-[#D6A32C]/50 hover:text-[#95721B] transition-colors"
-                    >
-                      Google
-                    </a>
+
+                  {/* Connexion — envoi du lien OAuth au client, jamais cliqué par l'agence */}
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col gap-1.5">
+                      {(["meta", "google"] as const).map((provider) => {
+                        const oauthUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/${provider}?clientId=${client.id}`;
+                        const providerLabel =
+                          provider === "meta" ? "Meta Ads" : "Google Ads";
+                        const message = `Bonjour ${client.nom}, pour connecter votre compte ${providerLabel} à notre agence, cliquez sur ce lien : ${oauthUrl}`;
+
+                        const mailtoLink = client.email
+                          ? `mailto:${client.email}?subject=${encodeURIComponent(
+                              `Connexion ${providerLabel} — Lezarts Digital`
+                            )}&body=${encodeURIComponent(message)}`
+                          : null;
+                        const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
+                          message
+                        )}`;
+                        const linkId = `${client.id}-${provider}`;
+
+                        return (
+                          <div
+                            key={provider}
+                            className="flex items-center gap-1 rounded-md border border-[#1A1720]/10 px-2 py-1"
+                          >
+                            <span className="mr-auto text-[10px] font-[IBM_Plex_Mono,monospace] uppercase tracking-wide text-[#9C96B5]">
+                              {providerLabel}
+                            </span>
+
+                            {mailtoLink ? (
+                              <a
+                                href={mailtoLink}
+                                title={`Envoyer le lien ${providerLabel} par email`}
+                                className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-[#2D6FF2]"
+                              >
+                                <Mail size={14} />
+                              </a>
+                            ) : (
+                              <span
+                                title="Aucun email renseigné pour ce client"
+                                className="p-1 text-[#D9D5E0]"
+                              >
+                                <Mail size={14} />
+                              </span>
+                            )}
+
+                            <a
+                              href={whatsappLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Envoyer le lien ${providerLabel} par WhatsApp`}
+                              className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-emerald-600"
+                            >
+                              <MessageCircle size={14} />
+                            </a>
+
+                            <button
+                              onClick={() => handleCopyLink(oauthUrl, linkId)}
+                              title="Copier le lien"
+                              className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-[#FF3D7F]"
+                            >
+                              {copiedId === linkId ? (
+                                <Check size={14} className="text-emerald-600" />
+                              ) : (
+                                <LinkIcon size={14} />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </td>
                 </tr>
               ))}
