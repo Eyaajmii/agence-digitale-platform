@@ -294,7 +294,11 @@ export default function ClientsPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1.5">
                       {(["meta", "google"] as const).map((provider) => {
-                        const oauthUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/${provider}?clientId=${client.id}`;
+                        const baseUrl =
+                          typeof window !== "undefined"
+                            ? window.location.origin
+                            : "";
+                        const oauthUrl = `${baseUrl}/api/auth/${provider}?clientId=${client.id}`;
                         const providerLabel =
                           provider === "meta" ? "Meta Ads" : "Google Ads";
                         const message = `Bonjour ${client.nom}, pour connecter votre compte ${providerLabel} à notre agence, cliquez sur ce lien : ${oauthUrl}`;
