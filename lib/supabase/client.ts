@@ -7,9 +7,6 @@ import type {
   PaginatedClients,
 } from '@/types/clients'
 
-// ─── Helper : crée un client frais à chaque appel ─────────────
-// IMPORTANT : ne jamais stocker dans une const au niveau du module
-// sinon la session n'est pas lue correctement côté navigateur
 function db() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,15 +80,13 @@ export async function getClients(
 }
 
 export async function getClientById(id: string): Promise<Client> {
-  const supabase = db()
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const res = await fetch(`/api/clients/${id}`);
 
-  if (error) throw new Error(error.message)
-  return data as Client
+  if (!res.ok) {
+    throw new Error("Erreur lors du chargement du client");
+  }
+
+  return await res.json();
 }
 
 // ─────────────────────────────────────────────
@@ -99,24 +94,20 @@ export async function getClientById(id: string): Promise<Client> {
 // ─────────────────────────────────────────────
 
 export async function addClient(form: ClientFormData): Promise<Client> {
-  const supabase = db()
- 
-  // NextAuth gère la session → on récupère l'user via getSession()
-  const session = await getSession()
-  if (!session?.user) throw new Error('Utilisateur non connecté')
- 
-  // manager_id = l'id de l'user NextAuth
-  // selon ta config NextAuth, l'id est dans session.user.id
-  const managerId = (session.user as { id?: string }).id ?? session.user.email
-  console.log("FORM =", form);
-  const { data, error } = await supabase
-    .from('clients')
-    .insert([{ ...formToRow(form), manager_id: managerId }])
-    .select()
-    .single()
- 
-  if (error) throw new Error(error.message)
-  return data as Client
+  const res = await fetch("/api/clients", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(form),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Erreur lors de la création");
+  }
+
+  return await res.json();
 }
 
 // ─────────────────────────────────────────────
@@ -127,16 +118,20 @@ export async function updateClient(
   id: string,
   form: ClientFormData
 ): Promise<Client> {
-  const supabase = db()
-  const { data, error } = await supabase
-    .from('clients')
-    .update(formToRow(form))
-    .eq('id', id)
-    .select()
-    .single()
+  const res = await fetch(`/api/clients/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(form),
+  });
 
-  if (error) throw new Error(error.message)
-  return data as Client
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Erreur lors de la modification");
+  }
+
+  return await res.json();
 }
 
 // ─────────────────────────────────────────────
@@ -144,13 +139,14 @@ export async function updateClient(
 // ─────────────────────────────────────────────
 
 export async function deleteClient(id: string): Promise<void> {
-  const supabase = db()
-  const { error } = await supabase
-    .from('clients')
-    .delete()
-    .eq('id', id)
+  const res = await fetch(`/api/clients/${id}`, {
+    method: "DELETE",
+  });
 
-  if (error) throw new Error(error.message)
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Erreur lors de la suppression");
+  }
 }
 
 // ─────────────────────────────────────────────

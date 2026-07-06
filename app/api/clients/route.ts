@@ -33,7 +33,19 @@ export async function GET(req: NextRequest) {
 
   let query = (await supabase)
     .from('clients')
-    .select('*', { count: 'exact' })
+    .select(
+      `
+        *,
+        collaborateurs (
+          id,
+          profiles (
+            nom,
+            prenom
+          )
+        )
+      `,
+      { count: 'exact' }
+    )
     .order('created_at', { ascending: false })
     if (session.user.role?.toLowerCase() === "collaborateur") {
       query = query.eq("collaborateur_id", session.user.id);

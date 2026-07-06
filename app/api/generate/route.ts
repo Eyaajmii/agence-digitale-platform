@@ -1,6 +1,6 @@
 import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 //import Anthropic from "@anthropic-ai/sdk";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 /*const anthropic = new Anthropic({
@@ -241,7 +241,54 @@ Rappel : respecte strictement le profil client, les contraintes de la plateforme
     },
   });
 }
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
 
+    const clientId = searchParams.get("clientId");
+    const page = Number(searchParams.get("page") || 1);
+    const limit = Number(searchParams.get("limit") || 10);
+
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = supabase
+      .from("contenus")
+      .select(
+        `
+        *,
+        clients (
+          id,
+          nom
+        )
+      `,
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false });
+
+    if (clientId) {
+      query = query.eq("client_id", clientId);
+    }
+
+    const { data, error, count } = await query.range(from, to);
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      data,
+      total: count || 0,
+      page,
+      total_pages: Math.ceil((count || 0) / limit),
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { error: "Erreur récupération contenus" },
+      { status: 500 }
+    );
+  }
+}
 // ── Helper: parse variants ─────────────────────────────────
 function parseVariants(text: string): string[] {
   const variants: string[] = [];
