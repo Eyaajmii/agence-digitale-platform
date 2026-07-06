@@ -2,12 +2,12 @@
 
 import type { AeoDetailsScore } from "@/types/aeo";
 
-const CRITERIA_LABELS: { key: keyof AeoDetailsScore; label: string; color: string }[] = [
-  { key: "clarte_definitions", label: "Clarté des définitions", color: "#7B6EF6" },
-  { key: "donnees_chiffrees", label: "Données chiffrées", color: "#E8A845" },
-  { key: "structure_faq", label: "Structure FAQ", color: "#E06B6B" },
-  { key: "entites_nommees", label: "Entités nommées", color: "#4CAF7D" },
-  { key: "autorite_sources", label: "Autorité des sources", color: "#7B6EF6" },
+const CRITERIA_LABELS: { key: keyof AeoDetailsScore; label: string }[] = [
+  { key: "clarte_definitions", label: "Clarté des définitions" },
+  { key: "donnees_chiffrees", label: "Données chiffrées" },
+  { key: "structure_faq", label: "Structure FAQ" },
+  { key: "entites_nommees", label: "Entités nommées" },
+  { key: "autorite_sources", label: "Autorité des sources" },
 ];
 
 export function ScoreGauge({
@@ -26,12 +26,19 @@ export function ScoreGauge({
     <div className="flex items-start gap-6">
       <div className="relative h-[110px] w-[110px] shrink-0">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+          <defs>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FF3D7F" />
+              <stop offset="100%" stopColor="#6C4CFF" />
+            </linearGradient>
+          </defs>
           <circle
             cx="50"
             cy="50"
             r={radius}
             fill="none"
-            stroke="#EDEAE2"
+            stroke="#1A1720"
+            strokeOpacity="0.08"
             strokeWidth="9"
           />
           <circle
@@ -39,7 +46,7 @@ export function ScoreGauge({
             cy="50"
             r={radius}
             fill="none"
-            stroke="#7B6EF6"
+            stroke="url(#scoreGradient)"
             strokeWidth="9"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -47,24 +54,26 @@ export function ScoreGauge({
             style={{ transition: "stroke-dashoffset 0.6s ease" }}
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-[#3D3A34]">
+        <div className="absolute inset-0 flex items-center justify-center font-[Space_Grotesk,sans-serif] text-3xl font-bold tabular-nums text-[#1A1720]">
           {Math.round(progress)}
         </div>
       </div>
 
-      <div className="flex-1 space-y-2.5 pt-1">
-        {CRITERIA_LABELS.map(({ key, label, color }) => (
-          <div key={key} className="grid grid-cols-[1fr_auto] items-center gap-3 text-sm">
+      <div className="flex-1 space-y-3 pt-1">
+        {CRITERIA_LABELS.map(({ key, label }) => (
+          <div key={key} className="grid grid-cols-[1fr_auto] items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="w-40 shrink-0 text-[#5B574E]">{label}</span>
-              <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[#EDEAE2]">
+              <span className="w-40 shrink-0 text-xs text-[#6B6579]">{label}</span>
+              <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[#1A1720]/8">
                 <div
-                  className="h-full rounded-full"
-                  style={{ width: `${details[key]}%`, backgroundColor: color }}
+                  className="h-full rounded-full bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF]"
+                  style={{ width: `${details[key]}%` }}
                 />
               </div>
             </div>
-            <span className="text-right font-medium text-[#3D3A34]">{details[key]}</span>
+            <span className="text-right font-[IBM_Plex_Mono,monospace] text-xs font-medium tabular-nums text-[#1A1720]">
+              {details[key]}
+            </span>
           </div>
         ))}
       </div>
@@ -74,9 +83,11 @@ export function ScoreGauge({
 
 export function ScoreLabel({ score }: { score: number }) {
   return (
-    <p className="text-sm text-[#5B574E]">
+    <p className="text-sm text-[#6B6579]">
       Score AEO —{" "}
-      <span className="font-semibold text-[#3D3A34]">{Math.round(score)}/100</span>
+      <span className="font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720]">
+        {Math.round(score)}/100
+      </span>
     </p>
   );
 }

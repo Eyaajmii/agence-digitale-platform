@@ -10,6 +10,7 @@ export interface CalendrierEvent {
       texte: string
       plateforme: string
       statut: string
+      objective:string
     }
     clients?: {
       nom: string

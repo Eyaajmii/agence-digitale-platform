@@ -22,7 +22,8 @@ export async function getCalendrierEvents(): Promise<CalendrierEvent[]> {
       contenus (
         texte,
         plateforme,
-        statut
+        statut,
+        objective
       ),
       clients (
         nom
@@ -120,7 +121,7 @@ export async function getContenusValides() {
         nom
       )
     `)
-    .eq('statut', 'Apprové')
+    .eq('statut', 'Approuvé')
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)

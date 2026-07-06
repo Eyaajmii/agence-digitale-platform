@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from "react";
-import { createBrowserClient } from "@supabase/ssr"
+import { createBrowserClient } from "@supabase/ssr";
 import { Bell, Flame, AlertTriangle, Bot, Layers, Check } from "lucide-react";
 
 interface Notification {
@@ -15,6 +15,45 @@ interface Notification {
   created_at: string;
 }
 
+const TYPE_STYLES = {
+  critical: {
+    icon: Flame,
+    iconBg: "bg-[#FF3D7F]/10",
+    iconText: "text-[#FF3D7F]",
+    dot: "bg-[#FF3D7F]",
+    badgeBg: "bg-[#FF3D7F]/10",
+    badgeText: "text-[#FF3D7F]",
+    label: "Critique",
+  },
+  warning: {
+    icon: AlertTriangle,
+    iconBg: "bg-amber-50",
+    iconText: "text-amber-600",
+    dot: "bg-amber-400",
+    badgeBg: "bg-amber-50",
+    badgeText: "text-amber-700",
+    label: "Alerte",
+  },
+  info: {
+    icon: Bot,
+    iconBg: "bg-[#6C4CFF]/10",
+    iconText: "text-[#6C4CFF]",
+    dot: "bg-[#6C4CFF]",
+    badgeBg: "bg-[#6C4CFF]/10",
+    badgeText: "text-[#6C4CFF]",
+    label: "IA",
+  },
+  system: {
+    icon: Layers,
+    iconBg: "bg-[#1A1720]/5",
+    iconText: "text-[#6B6579]",
+    dot: "bg-[#9C96B5]",
+    badgeBg: "bg-[#1A1720]/5",
+    badgeText: "text-[#6B6579]",
+    label: "Système",
+  },
+} as const;
+
 export default function NotificationDropdown({ userId }: { userId: string }) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +64,6 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
   const [activeTab, setActiveTab] = useState<'Toutes' | 'Alertes KPI' | 'IA' | 'Système'>('Toutes');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fermer le menu si on clique à l'extérieur
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -36,7 +74,6 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Charger les données initiales et brancher Supabase Realtime
   useEffect(() => {
     const fetchNotifications = async () => {
       const { data } = await supabase
@@ -65,7 +102,6 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
     };
   }, [userId, supabase]);
 
-  // Actions de l'interface
   const handleMarkAllAsRead = async () => {
     const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
     if (unreadIds.length === 0) return;
@@ -82,7 +118,6 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
     }
   };
 
-  // Filtrer selon l'onglet actif
   const filteredNotifications = notifications.filter(n => {
     if (activeTab === 'Toutes') return true;
     if (activeTab === 'Alertes KPI') return n.type === 'critical' || n.type === 'warning';
@@ -93,7 +128,6 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  // Calcul du temps relatif simplifié
   const formatTime = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
@@ -104,52 +138,54 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Bouton de la Cloche */}
-      <button 
+    <div className="relative font-[Inter,sans-serif]" ref={dropdownRef}>
+      {/* Bouton cloche */}
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition bg-white text-slate-600"
+        className="relative rounded-xl border border-[#1A1720]/10 bg-white p-2.5 text-[#6B6579] transition hover:bg-[#F4F5F1]"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-pulse">
-            {unreadCount}
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF3D7F] font-[IBM_Plex_Mono,monospace] text-[10px] font-bold text-white ring-2 ring-white">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF3D7F] opacity-75" />
+            <span className="relative">{unreadCount}</span>
           </span>
         )}
       </button>
 
-      {/* Conteneur du Panneau Déroulant */}
+      {/* Panneau déroulant */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-[450px] bg-white rounded-3xl shadow-2xl border border-slate-100 z-50 overflow-hidden text-slate-800">
-          
+        <div className="absolute right-0 z-50 mt-3 w-[450px] overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white shadow-xl">
           {/* Entête */}
-          <div className="p-5 flex items-center justify-between border-b border-slate-100">
+          <div className="flex items-center justify-between border-b border-[#1A1720]/10 p-5">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg">Notifications</span>
+              <span className="font-[Space_Grotesk,sans-serif] text-lg font-bold text-[#1A1720]">
+                Notifications
+              </span>
               {unreadCount > 0 && (
-                <span className="bg-red-50 text-red-500 px-2 py-0.5 rounded-full text-xs font-semibold">
+                <span className="rounded-full bg-[#FF3D7F]/10 px-2 py-0.5 font-[IBM_Plex_Mono,monospace] text-xs font-semibold text-[#FF3D7F]">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <button 
+            <button
               onClick={handleMarkAllAsRead}
-              className="text-sm font-semibold text-slate-900 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 transition"
+              className="rounded-xl border border-[#1A1720]/10 px-4 py-2 text-sm font-semibold text-[#1A1720] transition hover:bg-[#F4F5F1]"
             >
               Tout marquer lu
             </button>
           </div>
 
-          {/* Onglets de navigation */}
-          <div className="flex px-2 border-b border-slate-100 bg-slate-50/50">
+          {/* Onglets */}
+          <div className="flex border-b border-[#1A1720]/10 bg-[#F4F5F1]/50 px-2">
             {(['Toutes', 'Alertes KPI', 'IA', 'Système'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 text-center py-3 text-xs font-medium border-b-2 transition-all ${
-                  activeTab === tab 
-                    ? "border-orange-500 text-slate-900 font-semibold" 
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                className={`flex-1 border-b-2 py-3 text-center text-xs font-medium transition-all ${
+                  activeTab === tab
+                    ? "border-[#FF3D7F] font-semibold text-[#1A1720]"
+                    : "border-transparent text-[#9C96B5] hover:text-[#1A1720]"
                 }`}
               >
                 {tab}
@@ -157,91 +193,72 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
             ))}
           </div>
 
-          {/* Liste des Notifications */}
-          <div className="max-h-[480px] overflow-y-auto divide-y divide-slate-50">
+          {/* Liste */}
+          <div className="max-h-[480px] divide-y divide-[#1A1720]/5 overflow-y-auto">
             {filteredNotifications.length === 0 ? (
-              <div className="p-8 text-center text-sm text-slate-400">
+              <div className="p-8 text-center text-sm text-[#9C96B5]">
                 Aucune notification dans cette catégorie.
               </div>
             ) : (
-              filteredNotifications.map((n) => (
-                <div 
-                  key={n.id} 
-                  className={`p-5 relative transition flex gap-4 ${!n.is_read ? 'bg-orange-50/20' : 'hover:bg-slate-50/60'}`}
-                >
-                  {/* Indicateur de non-lu (Point rouge/orange) */}
-                  {!n.is_read && (
-                    <span className={`absolute left-3 top-7 w-2 h-2 rounded-full ${
-                      n.type === 'critical' ? 'bg-red-500' : 'bg-orange-400'
-                    }`} />
-                  )}
+              filteredNotifications.map((n) => {
+                const style = TYPE_STYLES[n.type];
+                const Icon = style.icon;
+                return (
+                  <div
+                    key={n.id}
+                    className={`relative flex gap-4 p-5 transition ${
+                      !n.is_read ? "bg-[#FF3D7F]/5" : "hover:bg-[#F4F5F1]/60"
+                    }`}
+                  >
+                    {!n.is_read && (
+                      <span className={`absolute left-3 top-7 h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                    )}
 
-                  {/* Icône Dynamique selon Type */}
-                  <div className="flex-shrink-0">
-                    {n.type === 'critical' && (
-                      <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
-                        <Flame size={20} />
+                    <div className="flex-shrink-0">
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${style.iconBg} ${style.iconText}`}>
+                        <Icon size={20} />
                       </div>
-                    )}
-                    {n.type === 'warning' && (
-                      <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                        <AlertTriangle size={20} />
-                      </div>
-                    )}
-                    {n.type === 'info' && (
-                      <div className="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
-                        <Bot size={20} />
-                      </div>
-                    )}
-                    {n.type === 'system' && (
-                      <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-                        <Layers size={20} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Contenu textuel */}
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-900">{n.title}</h4>
-                      <p className="text-slate-600 text-xs mt-1 leading-relaxed whitespace-pre-line">
-                        {n.message}
-                      </p>
                     </div>
 
-                    {/* Meta Données & Badges */}
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium">
-                      <span>⏱️ {formatTime(n.created_at)}</span>
-                      {n.source && (
-                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">
-                          {n.source}
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <h4 className="font-[Space_Grotesk,sans-serif] text-sm font-bold text-[#1A1720]">
+                          {n.title}
+                        </h4>
+                        <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-[#6B6579]">
+                          {n.message}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-[11px] font-medium text-[#9C96B5]">
+                        <span>⏱️ {formatTime(n.created_at)}</span>
+                        {n.source && (
+                          <span className="rounded-md bg-[#1A1720]/5 px-2 py-0.5 font-semibold text-[#6B6579]">
+                            {n.source}
+                          </span>
+                        )}
+                        <span className={`rounded-md px-2 py-0.5 font-bold uppercase ${style.badgeBg} ${style.badgeText}`}>
+                          {style.label}
                         </span>
-                      )}
-                      <span className={`px-2 py-0.5 rounded-md font-bold uppercase ${
-                        n.type === 'critical' ? 'bg-red-50 text-red-500' :
-                        n.type === 'warning' ? 'bg-amber-50 text-amber-600' :
-                        n.type === 'info' ? 'bg-violet-50 text-violet-600' : 'bg-blue-50 text-blue-600'
-                      }`}>
-                        {n.type === 'critical' ? 'Critique' : n.type === 'warning' ? 'Alerte' : n.type === 'info' ? 'IA' : 'Système'}
-                      </span>
-                    </div>
+                      </div>
 
-                    {/* Boutons d'actions contextuels */}
-                    <div className="flex gap-2 pt-1">
-                      <button 
-                        onClick={() => handleToggleRead(n.id)}
-                        className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 border border-slate-200 rounded-xl hover:bg-white bg-slate-50 transition"
-                      >
-                        <Check size={14} />
-                        {n.is_read ? "Marquer non lu" : "Marquer lu"}
-                      </button>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => handleToggleRead(n.id)}
+                          className="flex items-center gap-1.5 rounded-xl border border-[#1A1720]/10 bg-[#F4F5F1] px-4 py-2 text-xs font-semibold text-[#1A1720] transition hover:bg-white"
+                        >
+                          <Check size={14} />
+                          {n.is_read ? "Marquer non lu" : "Marquer lu"}
+                        </button>
+                      </div>
                     </div>
-                </div>
-                </div>
-            )))}
-            </div>
-            </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       )}
-      </div>
-  )}
-                  
+    </div>
+  );
+}

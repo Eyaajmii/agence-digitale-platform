@@ -17,6 +17,61 @@ import type {
 import { SECTOR_OPTIONS, TON_OPTIONS, PLATFORM_LABELS } from "@/types/clients";
 import { getCollaborateurs } from "@/lib/supabase/collaborateur";
 import { useSession } from "next-auth/react";
+import {
+  ChevronLeft,
+  Pencil,
+  Trash2,
+  Mail,
+  Building2,
+  Mic2,
+  ShieldAlert,
+  UserCog,
+  CalendarClock,
+  FileText,
+  Plus,
+  X,
+} from "lucide-react";
+
+// ─── Petits composants utilitaires ─────────────────────────────
+
+function InfoCard({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: any;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white p-5">
+      <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={14} className="text-[#9C96B5]" />
+        <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+          {label}
+        </p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function StatusPill({ statut }: { statut: string | null }) {
+  const actif = statut === "actif";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium font-[IBM_Plex_Mono,monospace] ${
+        actif ? "bg-emerald-50 text-emerald-700" : "bg-[#1A1720]/5 text-[#6B6579]"
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${actif ? "bg-emerald-500" : "bg-[#9C96B5]"}`} />
+      {actif ? "Actif" : statut || "En attente"}
+    </span>
+  );
+}
+
+// ─── Vue détaillée du client ───────────────────────────────────
 
 function ClientView({
   client,
@@ -29,31 +84,36 @@ function ClientView({
   onDelete: () => void;
   isCollaborateur: boolean;
 }) {
+  const collaborateurName = client.collaborateurs?.profiles
+    ? `${client.collaborateurs.profiles.prenom ?? ""} ${client.collaborateurs.profiles.nom ?? ""}`.trim()
+    : null;
+
   return (
     <div className="space-y-6">
-      {/* Carte principale */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-900">
-              {client.nom}
-            </h2>
-            <div className="mt-1 flex items-center gap-2 flex-wrap">
-              {client.secteur && (
-                <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
-                  {client.secteur}
-                </span>
-              )}
-              {client.ton && (
-                <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 capitalize">
-                  {client.ton}
-                </span>
-              )}
-              {client.statut && (
-                <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 capitalize">
-                  {client.statut}
-                </span>
-              )}
+      {/* En-tête client */}
+      <div className="relative overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF3D7F]/15 to-[#6C4CFF]/15 text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#FF3D7F]">
+              {client.nom?.charAt(0)?.toUpperCase() ?? "?"}
+            </div>
+            <div>
+              <h2 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720]">
+                {client.nom}
+              </h2>
+              <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                <StatusPill statut={client.statut} />
+                {client.secteur && (
+                  <span className="rounded-full bg-[#6C4CFF]/10 px-2.5 py-1 text-xs font-medium text-[#6C4CFF] font-[IBM_Plex_Mono,monospace]">
+                    {client.secteur}
+                  </span>
+                )}
+                {client.ton && (
+                  <span className="rounded-full bg-[#1A1720]/5 px-2.5 py-1 text-xs text-[#6B6579] capitalize font-[IBM_Plex_Mono,monospace]">
+                    {client.ton}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -61,91 +121,126 @@ function ClientView({
             <div className="flex gap-2">
               <button
                 onClick={onEdit}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-[#1A1720]/10 px-3.5 py-2 text-sm font-medium text-[#1A1720] hover:bg-[#F4F5F1] transition-colors"
               >
+                <Pencil size={14} />
                 Modifier
               </button>
-
               <button
                 onClick={onDelete}
-                className="rounded-lg border border-red-100 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-[#FF3D7F]/25 px-3.5 py-2 text-sm font-medium text-[#FF3D7F] hover:bg-[#FF3D7F]/10 transition-colors"
               >
+                <Trash2 size={14} />
                 Supprimer
               </button>
             </div>
           )}
         </div>
-
-        {/* Mots interdits */}
-        {client.mots_interdits && client.mots_interdits.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-              Mots interdits
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {client.mots_interdits.map((mot) => (
-                <span
-                  key={mot}
-                  className="rounded-md bg-red-50 px-2 py-0.5 text-xs text-red-600"
-                >
-                  {mot}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Métadonnées */}
-        <div className="border-t border-zinc-100 pt-4 grid grid-cols-2 gap-4 text-xs text-zinc-400">
-          <div>
-            <p className="font-medium text-zinc-500">Créé le</p>
-            <p>
-              {client.created_at
-                ? new Date(client.created_at).toLocaleDateString("fr-FR")
-                : "—"}
-            </p>
-          </div>
-          <div>
-            <p className="font-medium text-zinc-500">Exemples</p>
-            <p>
-              {client.exemples?.length ?? 0} enregistré
-              {(client.exemples?.length ?? 0) > 1 ? "s" : ""}
-            </p>
-          </div>
-        </div>
       </div>
 
+      {/* Grille d'informations complètes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InfoCard icon={Mail} label="Email">
+          <p className="text-sm font-medium text-[#1A1720] break-all">
+            {client.email || "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={UserCog} label="Collaborateur assigné">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {collaborateurName || "Non assigné"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={Building2} label="Secteur d'activité">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {client.secteur || "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={Mic2} label="Ton éditorial">
+          <p className="text-sm font-medium text-[#1A1720] capitalize">
+            {client.ton || "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={CalendarClock} label="Client depuis">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {client.created_at
+              ? new Date(client.created_at).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={FileText} label="Exemples enregistrés">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {client.exemples?.length ?? 0} contenu
+            {(client.exemples?.length ?? 0) > 1 ? "s" : ""} référence
+          </p>
+        </InfoCard>
+      </div>
+
+      {/* Mots interdits */}
+      {client.mots_interdits && client.mots_interdits.length > 0 && (
+        <div className="relative overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+          <span className="absolute left-0 top-0 h-full w-[3px] bg-[#FF3D7F]" />
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldAlert size={14} className="text-[#9C96B5]" />
+            <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+              Mots interdits
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {client.mots_interdits.map((mot) => (
+              <span
+                key={mot}
+                className="rounded-md bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600"
+              >
+                {mot}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Exemples de contenus */}
       {client.exemples && client.exemples.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+          <h3 className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace] px-1">
             Exemples de contenus
           </h3>
-          {client.exemples.map((ex, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
-                  {PLATFORM_LABELS[ex.platforme] ?? ex.platforme}
-                </span>
-                {ex.performance && (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      ex.performance === "excellent"
-                        ? "bg-green-50 text-green-700"
-                        : "bg-amber-50 text-amber-700"
-                    }`}
-                  >
-                    {ex.performance}
+          <div className="space-y-3">
+            {client.exemples.map((ex, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-[#1A1720]/10 bg-white p-5 space-y-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-[#1A1720]/5 px-2.5 py-1 text-xs font-medium text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
+                    {PLATFORM_LABELS[ex.platforme] ?? ex.platforme}
                   </span>
-                )}
+                  {ex.performance && (
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium font-[IBM_Plex_Mono,monospace] ${
+                        ex.performance === "excellent"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {ex.performance}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[#1A1720] whitespace-pre-wrap leading-relaxed">
+                  {ex.text}
+                </p>
               </div>
-              <p className="text-sm text-zinc-700 whitespace-pre-wrap">
-                {ex.text}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -181,13 +276,10 @@ function ClientEditForm({
       const data = await getCollaborateurs();
       setCollaborateurs(data ?? []);
     }
-
     loadCollaborateurs();
   }, []);
-  function set<K extends keyof ClientFormData>(
-    key: K,
-    value: ClientFormData[K]
-  ) {
+
+  function set<K extends keyof ClientFormData>(key: K, value: ClientFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -198,17 +290,12 @@ function ClientEditForm({
   function updateExemple(i: number, field: keyof Exemple, value: string) {
     set(
       "exemples",
-      form.exemples.map((ex, idx) =>
-        idx === i ? { ...ex, [field]: value } : ex
-      )
+      form.exemples.map((ex, idx) => (idx === i ? { ...ex, [field]: value } : ex))
     );
   }
 
   function removeExemple(i: number) {
-    set(
-      "exemples",
-      form.exemples.filter((_, idx) => idx !== i)
-    );
+    set("exemples", form.exemples.filter((_, idx) => idx !== i));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -225,91 +312,79 @@ function ClientEditForm({
     }
   }
 
+  const inputClass =
+    "w-full rounded-lg border border-[#1A1720]/10 bg-white px-3.5 py-2.5 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/15 transition-all";
+  const labelClass = "block text-sm font-medium text-[#1A1720] mb-1.5";
+  const sectionLabelClass =
+    "text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {/* Infos générales */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-          Infos générales
-        </h2>
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6 space-y-4">
+        <h2 className={sectionLabelClass}>Infos générales</h2>
 
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-zinc-700">
-            Nom <span className="text-red-400">*</span>
+        <div>
+          <label className={labelClass}>
+            Nom <span className="text-[#FF3D7F]">*</span>
           </label>
           <input
             required
             type="text"
             value={form.nom}
             onChange={(e) => set("nom", e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+            className={inputClass}
           />
         </div>
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-zinc-700">
-            Email <span className="text-red-400">*</span>
+        <div>
+          <label className={labelClass}>
+            Email <span className="text-[#FF3D7F]">*</span>
           </label>
           <input
             required
             type="text"
             value={form.email}
             onChange={(e) => set("email", e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+            className={inputClass}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Secteur
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className={labelClass}>Secteur</label>
             <select
               value={form.secteur}
-              onChange={(e) =>
-                set("secteur", e.target.value as ClientFormData["secteur"])
-              }
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500"
+              onChange={(e) => set("secteur", e.target.value as ClientFormData["secteur"])}
+              className={inputClass}
             >
               {SECTOR_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Ton
-            </label>
+          <div>
+            <label className={labelClass}>Ton</label>
             <select
               value={form.ton}
-              onChange={(e) =>
-                set("ton", e.target.value as ClientFormData["ton"])
-              }
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500"
+              onChange={(e) => set("ton", e.target.value as ClientFormData["ton"])}
+              className={inputClass}
             >
               {TON_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
           </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Statut
-            </label>
+          <div>
+            <label className={labelClass}>Statut</label>
             <select
               value={form.statut}
-              onChange={(e) =>
-                set("statut", e.target.value as ClientFormData["statut"])
-              }
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500"
+              onChange={(e) => set("statut", e.target.value as ClientFormData["statut"])}
+              className={inputClass}
             >
               <option value="actif">Actif</option>
               <option value="en attente">En attente</option>
@@ -319,72 +394,78 @@ function ClientEditForm({
       </section>
 
       {/* Profil IA */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-          Profil IA
-        </h2>
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-zinc-700">
-            Mots interdits
-          </label>
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6 space-y-4">
+        <h2 className={sectionLabelClass}>Profil IA</h2>
+        <div>
+          <label className={labelClass}>Mots interdits</label>
           <input
             type="text"
             value={form.mots_interdits}
             onChange={(e) => set("mots_interdits", e.target.value)}
             placeholder="pas cher, discount…"
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500"
+            className={inputClass}
           />
-          <p className="text-xs text-zinc-400">Séparés par des virgules</p>
+          <p className="text-xs text-[#9C96B5] mt-1.5">Séparés par des virgules</p>
+        </div>
+      </section>
+
+      {/* Affectation */}
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6 space-y-4">
+        <h2 className={sectionLabelClass}>Affectation</h2>
+        <div>
+          <label className={labelClass}>Collaborateur</label>
+          <select
+            value={form.collaborateur_id}
+            onChange={(e) => set("collaborateur_id", e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Sélectionner un collaborateur</option>
+            {collaborateurs.map((collab) => (
+              <option key={collab.id} value={collab.id}>
+                {collab.profiles?.nom} {collab.profiles?.prenom}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
 
       {/* Exemples */}
-      <section className="space-y-4">
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Exemples
-          </h2>
+          <h2 className={sectionLabelClass}>Exemples</h2>
           <button
             type="button"
             onClick={addExemple}
-            className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-[#6C4CFF]/10 px-3 py-1.5 text-xs font-medium text-[#6C4CFF] hover:bg-[#6C4CFF]/15 transition-colors"
           >
-            + Ajouter
+            <Plus size={13} />
+            Ajouter
           </button>
         </div>
 
         {form.exemples.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-zinc-200 py-6 text-center text-xs text-zinc-400">
+          <p className="rounded-lg border border-dashed border-[#1A1720]/15 py-6 text-center text-xs text-[#9C96B5]">
             Aucun exemple
           </p>
         ) : (
           <div className="space-y-3">
             {form.exemples.map((ex, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 space-y-2"
-              >
-                <div className="flex items-center justify-between">
+              <div key={i} className="rounded-lg border border-[#1A1720]/10 bg-[#F4F5F1] p-4 space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <select
                     value={ex.platforme}
-                    onChange={(e) =>
-                      updateExemple(i, "platforme", e.target.value)
-                    }
-                    className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs outline-none"
+                    onChange={(e) => updateExemple(i, "platforme", e.target.value)}
+                    className="rounded-md border border-[#1A1720]/10 bg-white px-2.5 py-1.5 text-xs outline-none"
                   >
                     {(Object.keys(PLATFORM_LABELS) as Platforme[]).map((p) => (
-                      <option key={p} value={p}>
-                        {PLATFORM_LABELS[p]}
-                      </option>
+                      <option key={p} value={p}>{PLATFORM_LABELS[p]}</option>
                     ))}
                   </select>
                   <div className="flex items-center gap-2">
                     <select
                       value={ex.performance ?? ""}
-                      onChange={(e) =>
-                        updateExemple(i, "performance", e.target.value)
-                      }
-                      className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs outline-none"
+                      onChange={(e) => updateExemple(i, "performance", e.target.value)}
+                      className="rounded-md border border-[#1A1720]/10 bg-white px-2.5 py-1.5 text-xs outline-none"
                     >
                       <option value="">Performance</option>
                       <option value="bon">Bon</option>
@@ -393,9 +474,9 @@ function ClientEditForm({
                     <button
                       type="button"
                       onClick={() => removeExemple(i)}
-                      className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
+                      className="flex items-center gap-1 text-xs text-[#9C96B5] hover:text-[#FF3D7F] transition-colors"
                     >
-                      Supprimer
+                      <X size={13} />
                     </button>
                   </div>
                 </div>
@@ -403,45 +484,20 @@ function ClientEditForm({
                   rows={3}
                   value={ex.text}
                   onChange={(e) => updateExemple(i, "text", e.target.value)}
-                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs outline-none resize-none focus:border-violet-500"
+                  className="w-full rounded-md border border-[#1A1720]/10 bg-white px-3 py-2 text-xs outline-none resize-none focus:border-[#6C4CFF]"
                 />
               </div>
             ))}
           </div>
         )}
-        <section className="space-y-4">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Affectation
-          </h2>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Collaborateur
-            </label>
-
-            <select
-              value={form.collaborateur_id}
-              onChange={(e) => set("collaborateur_id", e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"
-            >
-              <option value="">Sélectionner un collaborateur</option>
-
-              {collaborateurs.map((collab) => (
-                <option key={collab.id} value={collab.id}>
-                  {collab.profiles?.nom} {collab.profiles?.prenom}
-                </option>
-              ))}
-            </select>
-          </div>
-        </section>
       </section>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 pt-2 border-t border-zinc-100">
+      <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-[#1A1720] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#2A2632] disabled:opacity-50 transition-colors"
         >
           {loading ? (
             <>
@@ -455,7 +511,7 @@ function ClientEditForm({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-zinc-200 px-5 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+          className="rounded-lg border border-[#1A1720]/10 px-5 py-2.5 text-sm font-medium text-[#6B6579] hover:bg-[#F4F5F1] transition-colors"
         >
           Annuler
         </button>
@@ -475,8 +531,8 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(isEdit);
   const { data: session } = useSession();
-  const isCollaborateur =
-    session?.user?.role?.toLowerCase() === "collaborateur";
+  const isCollaborateur = session?.user?.role?.toLowerCase() === "collaborateur";
+
   useEffect(() => {
     async function load() {
       try {
@@ -498,20 +554,17 @@ export default function ClientPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+      <div className="flex items-center justify-center py-24">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF3D7F] border-t-transparent" />
       </div>
     );
   }
 
   if (!client) {
     return (
-      <div className="p-6 text-center text-sm text-zinc-400">
+      <div className="rounded-2xl border border-dashed border-[#1A1720]/15 bg-white p-12 text-center text-sm text-[#6B6579]">
         Client introuvable.{" "}
-        <Link
-          href="/dashboard/clients"
-          className="text-violet-600 hover:underline"
-        >
+        <Link href="/dashboard/clients" className="text-[#6C4CFF] font-medium hover:underline">
           Retour à la liste
         </Link>
       </div>
@@ -519,21 +572,22 @@ export default function ClientPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 font-[Inter,sans-serif]">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <Link
           href="/dashboard/clients"
-          className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+          className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
         >
-          ← Clients
+          <ChevronLeft size={15} />
+          Clients
         </Link>
-        <span className="text-zinc-200">/</span>
-        <span className="text-sm text-zinc-600">{client.nom}</span>
+        <span className="text-[#1A1720]/15">/</span>
+        <span className="text-sm text-[#1A1720] font-medium">{client.nom}</span>
         {editMode && (
           <>
-            <span className="text-zinc-200">/</span>
-            <span className="text-sm text-zinc-400">Modifier</span>
+            <span className="text-[#1A1720]/15">/</span>
+            <span className="text-sm text-[#9C96B5]">Modifier</span>
           </>
         )}
       </div>

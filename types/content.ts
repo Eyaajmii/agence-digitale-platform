@@ -1,5 +1,5 @@
 export type Platform = 'Twitter' | 'Instagram' | 'Facebook' | 'Linkedin' | 'GoogleAds' | 'TikTok'
-export type ContentStatus = 'Brouillon' | 'Publié' | 'Apprové' 
+export type ContentStatus = 'Brouillon' | 'Publié' | 'Approuvé' 
 
 export interface Contenu {
   id: string
@@ -7,6 +7,7 @@ export interface Contenu {
   plateforme: Platform
   statut: ContentStatus
   texte: string
+  objective:string
   variantes: string[] | null
   created_at: string
   updated_at?: string
@@ -35,11 +36,11 @@ export type SSEEvent =
   | { type: 'error'; message: string }
 
 export const PLATFORM_LABELS: Record<Platform, string> = {
-  Twitter: '𝕏 Twitter',
-  Instagram: '📸 Instagram',
-  Facebook: '📘 Facebook',
-  Linkedin: '💼 LinkedIn',
-  GoogleAds: '🔍 Google Ads',
+  Twitter: 'Twitter',
+  Instagram: 'Instagram',
+  Facebook: 'Facebook',
+  Linkedin: 'LinkedIn',
+  GoogleAds: 'Google Ads',
   TikTok:'TikTok'
 }
 

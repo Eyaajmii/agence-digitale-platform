@@ -13,11 +13,11 @@ function getInitials(nom: string, prenom: string) {
 
 function getAvatarColor(nom: string) {
   const colors = [
-    "bg-violet-100 text-violet-700",
-    "bg-blue-100 text-blue-700",
-    "bg-teal-100 text-teal-700",
-    "bg-pink-100 text-pink-700",
-    "bg-amber-100 text-amber-700",
+    "bg-[#6C4CFF]/10 text-[#6C4CFF]",
+    "bg-[#2D6FF2]/10 text-[#2D6FF2]",
+    "bg-[#2BB7C4]/10 text-[#1A8A95]",
+    "bg-[#FF3D7F]/10 text-[#FF3D7F]",
+    "bg-[#D6A32C]/10 text-[#95721B]",
   ];
 
   return colors[nom.charCodeAt(0) % colors.length];
@@ -63,50 +63,51 @@ export default function CollaborateursPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto font-[Inter,sans-serif]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">
+          <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
             Collaborateurs
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">
+  
+          <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
             {collaborateurs.length} collaborateur
-            {collaborateurs.length > 1 ? "s" : ""}
+            {collaborateurs.length !== 1 ? "s" : ""}
           </p>
         </div>
-
+  
         <Link
           href="/dashboard/collaborateurs/addCollab"
-          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
         >
           + Nouveau collaborateur
         </Link>
       </div>
-
+  
       {/* Loading */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF3D7F] border-t-transparent" />
         </div>
       ) : collaborateurs.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-200 py-20 text-center">
-          <p className="text-sm text-zinc-400">
+        <div className="rounded-xl border border-dashed border-[#1A1720]/15 py-20 text-center">
+          <p className="text-[#9C96B5] text-sm">
             Aucun collaborateur pour le moment.
           </p>
-
+  
           <Link
             href="/dashboard/collaborateurs/addCollab"
-            className="mt-3 inline-block text-sm font-medium text-violet-600 hover:underline"
+            className="mt-3 inline-block text-sm font-medium text-[#FF3D7F] hover:underline"
           >
             Créer votre premier collaborateur →
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-100 bg-zinc-50 text-xs uppercase tracking-wide text-zinc-400">
+              <tr className="border-b border-[#1A1720]/10 bg-[#F4F5F1] text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
                 <th className="px-4 py-3 text-left">Collaborateur</th>
                 <th className="px-4 py-3 text-left">Téléphone</th>
                 <th className="px-4 py-3 text-left">Email</th>
@@ -114,73 +115,72 @@ export default function CollaborateursPage() {
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-
-            <tbody className="divide-y divide-zinc-100">
+  
+            <tbody className="divide-y divide-[#1A1720]/5">
               {collaborateurs.map((collab) => {
                 const profile = collab.profiles;
-
+  
                 return (
                   <tr
                     key={collab.id}
-                    className="hover:bg-zinc-50 transition-colors"
+                    className="hover:bg-[#F4F5F1]/60 transition-colors"
                   >
-                    {/* Nom */}
+                    {/* Collaborateur */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold ${getAvatarColor(
+                          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-[Space_Grotesk,sans-serif] font-semibold ${getAvatarColor(
                             profile.nom
                           )}`}
                         >
                           {getInitials(profile.nom, profile.prenom)}
                         </div>
-
-                        <div>
-                          <p className="font-medium text-zinc-900">
-                            {profile.nom} {profile.prenom}
-                          </p>
-                        </div>
+  
+                        <Link
+                          href={`/dashboard/collaborateurs/${collab.id}`}
+                          className="font-medium text-[#1A1720] hover:text-[#FF3D7F] transition-colors"
+                        >
+                          {profile.nom} {profile.prenom}
+                        </Link>
                       </div>
                     </td>
-
+  
                     {/* Téléphone */}
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="px-4 py-3 text-[#6B6579]">
                       {profile.telephone || (
-                        <span className="text-zinc-300">—</span>
+                        <span className="text-[#D9D5E0]">—</span>
                       )}
                     </td>
-
-                    {/* Role */}
+  
+                    {/* Email */}
                     <td className="px-4 py-3">
-                      <span className="inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">
+                      <span className="inline-flex rounded-full bg-[#6C4CFF]/10 px-2.5 py-0.5 text-xs font-medium text-[#6C4CFF]">
                         {profile.email}
                       </span>
                     </td>
-
+  
                     {/* Date */}
-                    <td className="px-4 py-3 text-zinc-500">
-                      {new Date(profile.created_at).toLocaleDateString(
-                        "fr-FR"
-                      )}
+                    <td className="px-4 py-3 text-[#6B6579]">
+                      {new Date(profile.created_at).toLocaleDateString("fr-FR")}
                     </td>
-
+  
                     {/* Actions */}
                     <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-1">
                         <Link
                           href={`/dashboard/collaborateurs/${collab.id}`}
-                          className="rounded-md px-2.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 transition-colors"
+                          className="rounded-md px-2.5 py-1 text-xs text-[#6B6579] hover:bg-[#1A1720]/5 transition-colors"
                         >
                           Voir
                         </Link>
-
+  
                         <Link
                           href={`/dashboard/collaborateurs/${collab.id}?edit=1`}
-                          className="rounded-md px-2.5 py-1 text-xs text-violet-600 hover:bg-violet-50 transition-colors"
+                          className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
                         >
                           Modifier
                         </Link>
-
+  
                         <button
                           onClick={() =>
                             handleDelete(
@@ -190,7 +190,7 @@ export default function CollaborateursPage() {
                             )
                           }
                           disabled={deletingId === collab.id}
-                          className="rounded-md px-2.5 py-1 text-xs text-zinc-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
+                          className="rounded-md px-2.5 py-1 text-xs text-[#9C96B5] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
                         >
                           {deletingId === collab.id
                             ? "Suppression..."

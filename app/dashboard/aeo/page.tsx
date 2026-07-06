@@ -1,4 +1,3 @@
-//audit URl
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,27 +5,34 @@ import { ScoreGauge, ScoreLabel } from "@/components/aeo/scoreGauge";
 import { RecommendationCard } from "@/components/aeo/recommandationlist";
 import { MonitoringTable } from "@/components/aeo/monotoringtable";
 import type { AeoAudit, AeoMonitoringRow, MoteurIA } from "@/types/aeo";
+import { useAeoClient } from "@/hooks/useAeoClient";
 
 type Tab = "audit" | "generateur" | "monitoring";
 
-// TODO: remplacer par le client actuellement sélectionné dans l'app
-// (contexte / query param / sélecteur global déjà présent ailleurs dans le dashboard).
-const CURRENT_CLIENT_ID = "00000000-0000-0000-0000-000000000000";
-
 export default function AeoPage() {
   const [tab, setTab] = useState<Tab>("audit");
+  const { clients, selectedClient, loadingClients, handleClientChange } = useAeoClient();
 
   return (
-    <div className="min-h-screen bg-[#F5F1E8] px-6 py-6">
-      <header className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🔎</span>
-          <h1 className="text-lg font-semibold text-[#3D3A34]">
-            AEO / GEO — Référencement IA
-          </h1>
+    <div className="space-y-6 font-[Inter,sans-serif]">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {!loadingClients && clients.length > 0 && (
+            <select
+              value={selectedClient}
+              onChange={(e) => handleClientChange(e.target.value)}
+              className="rounded-lg border border-[#1A1720]/10 bg-white px-3 py-2 text-sm font-medium text-[#1A1720] outline-none focus:border-[#6C4CFF]"
+            >
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nom}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
-        <nav className="flex gap-1 rounded-full bg-[#EAE5D9] p-1">
+        <nav className="flex gap-1 rounded-full border border-[#1A1720]/10 bg-white p-1">
           {[
             { id: "audit" as Tab, label: "Audit & Score" },
             { id: "generateur" as Tab, label: "Générateur" },
@@ -37,8 +43,8 @@ export default function AeoPage() {
               onClick={() => setTab(item.id)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 tab === item.id
-                  ? "bg-white text-[#3D3A34] shadow-sm"
-                  : "text-[#8A8579] hover:text-[#3D3A34]"
+                  ? "bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] text-white"
+                  : "text-[#6B6579] hover:text-[#1A1720]"
               }`}
             >
               {item.label}
@@ -47,9 +53,15 @@ export default function AeoPage() {
         </nav>
       </header>
 
-      {tab === "audit" && <AuditTab clientId={CURRENT_CLIENT_ID} />}
-      {tab === "generateur" && <GeneratorTab clientId={CURRENT_CLIENT_ID} />}
-      {tab === "monitoring" && <MonitoringTab clientId={CURRENT_CLIENT_ID} />}
+      {!selectedClient ? (
+        <p className="text-sm text-[#9C96B5]">Chargement des clients…</p>
+      ) : (
+        <>
+          {tab === "audit" && <AuditTab clientId={selectedClient} />}
+          {tab === "generateur" && <GeneratorTab clientId={selectedClient} />}
+          {tab === "monitoring" && <MonitoringTab clientId={selectedClient} />}
+        </>
+      )}
     </div>
   );
 }
@@ -90,26 +102,28 @@ function AuditTab({ clientId }: { clientId: string }) {
     : [];
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-[#3D3A34]">Auditer une URL</h2>
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <h2 className="mb-4 font-[Space_Grotesk,sans-serif] text-sm font-semibold text-[#1A1720]">
+          Auditer une URL
+        </h2>
         <div className="mb-5 flex gap-2">
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            className="flex-1 rounded-lg border border-[#EAE5D9] bg-[#FBFAF6] px-3 py-2 text-sm text-[#3D3A34] outline-none focus:border-[#7B6EF6]"
+            className="flex-1 rounded-lg border border-[#1A1720]/10 bg-[#F4F5F1] px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF]"
           />
           <button
             onClick={handleAnalyse}
             disabled={loading || !url}
-            className="rounded-lg bg-[#3D3A34] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading ? "Analyse…" : "▷ Analyser"}
           </button>
         </div>
 
-        {error && <p className="mb-4 text-sm text-[#D5473B]">{error}</p>}
+        {error && <p className="mb-4 text-sm text-[#FF3D7F]">{error}</p>}
 
         {audit ? (
           <div>
@@ -120,24 +134,22 @@ function AuditTab({ clientId }: { clientId: string }) {
           </div>
         ) : (
           !loading && (
-            <p className="text-sm text-[#8A8579]">
+            <p className="text-sm text-[#9C96B5]">
               Renseignez une URL et lancez l'analyse pour obtenir le score AEO.
             </p>
           )
         )}
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-[#3D3A34]">
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <h2 className="mb-4 font-[Space_Grotesk,sans-serif] text-sm font-semibold text-[#1A1720]">
           Recommandations — par impact
         </h2>
         <div className="space-y-3">
           {sortedRecos.length > 0 ? (
-            sortedRecos.map((reco, i) => (
-              <RecommendationCard key={i} recommandation={reco} />
-            ))
+            sortedRecos.map((reco, i) => <RecommendationCard key={i} recommandation={reco} />)
           ) : (
-            <p className="text-sm text-[#8A8579]">
+            <p className="text-sm text-[#9C96B5]">
               Les recommandations apparaîtront ici après l'analyse.
             </p>
           )}
@@ -189,9 +201,11 @@ function GeneratorTab({ clientId }: { clientId: string }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[380px_1fr]">
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-[#3D3A34]">Brief de l'article</h2>
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[380px_1fr]">
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <h2 className="mb-4 font-[Space_Grotesk,sans-serif] text-sm font-semibold text-[#1A1720]">
+          Brief de l'article
+        </h2>
         <div className="space-y-3">
           <Field label="Sujet">
             <input
@@ -220,22 +234,24 @@ function GeneratorTab({ clientId }: { clientId: string }) {
           <button
             onClick={handleGenerate}
             disabled={loading || !sujet || !publicCible}
-            className="mt-2 w-full rounded-lg bg-[#3D3A34] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="mt-2 w-full rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading ? "Génération…" : "Générer l'article"}
           </button>
-          {error && <p className="text-sm text-[#D5473B]">{error}</p>}
+          {error && <p className="text-sm text-[#FF3D7F]">{error}</p>}
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-[#3D3A34]">Article AEO-ready</h2>
+      <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <h2 className="mb-4 font-[Space_Grotesk,sans-serif] text-sm font-semibold text-[#1A1720]">
+          Article AEO-ready
+        </h2>
         {article ? (
-          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#3D3A34]">
+          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-[#1A1720]">
             {article}
           </pre>
         ) : (
-          <p className="text-sm text-[#8A8579]">
+          <p className="text-sm text-[#9C96B5]">
             L'article généré (définition, sections H2/H3, FAQ, données sourcées) s'affichera ici.
           </p>
         )}
@@ -245,15 +261,15 @@ function GeneratorTab({ clientId }: { clientId: string }) {
         .input {
           width: 100%;
           border-radius: 0.5rem;
-          border: 1px solid #eae5d9;
-          background: #fbfaf6;
+          border: 1px solid rgba(26, 23, 32, 0.1);
+          background: #f4f5f1;
           padding: 0.5rem 0.75rem;
           font-size: 0.875rem;
-          color: #3d3a34;
+          color: #1a1720;
           outline: none;
         }
         .input:focus {
-          border-color: #7b6ef6;
+          border-color: #6c4cff;
         }
       `}</style>
     </div>
@@ -263,7 +279,9 @@ function GeneratorTab({ clientId }: { clientId: string }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-[#8A8579]">{label}</span>
+      <span className="mb-1 block font-[IBM_Plex_Mono,monospace] text-[10px] font-medium uppercase tracking-[0.1em] text-[#9C96B5]">
+        {label}
+      </span>
       {children}
     </label>
   );
@@ -317,51 +335,58 @@ function MonitoringTab({ clientId }: { clientId: string }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-[#3D3A34]">
+    <section className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+      <h2 className="mb-4 font-[Space_Grotesk,sans-serif] text-sm font-semibold text-[#1A1720]">
         Monitoring citations IA — domaines suivis
       </h2>
 
       <div className="mb-5 flex flex-wrap items-end gap-2">
         <div>
-          <span className="mb-1 block text-xs font-medium text-[#8A8579]">Domaine cible</span>
+          <span className="mb-1 block font-[IBM_Plex_Mono,monospace] text-[10px] font-medium uppercase tracking-[0.1em] text-[#9C96B5]">
+            Domaine cible
+          </span>
           <input
             value={domaine}
             onChange={(e) => setDomaine(e.target.value)}
-            className="rounded-lg border border-[#EAE5D9] bg-[#FBFAF6] px-3 py-2 text-sm text-[#3D3A34] outline-none focus:border-[#7B6EF6]"
+            className="rounded-lg border border-[#1A1720]/10 bg-[#F4F5F1] px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF]"
           />
         </div>
-        <div className="flex-1 min-w-[220px]">
-          <span className="mb-1 block text-xs font-medium text-[#8A8579]">Nouvelle requête à suivre</span>
+        <div className="min-w-[220px] flex-1">
+          <span className="mb-1 block font-[IBM_Plex_Mono,monospace] text-[10px] font-medium uppercase tracking-[0.1em] text-[#9C96B5]">
+            Nouvelle requête à suivre
+          </span>
           <input
             value={nouvelleRequete}
             onChange={(e) => setNouvelleRequete(e.target.value)}
             placeholder="Ex : meilleur restaurant local Tunis"
-            className="w-full rounded-lg border border-[#EAE5D9] bg-[#FBFAF6] px-3 py-2 text-sm text-[#3D3A34] outline-none focus:border-[#7B6EF6]"
+            className="w-full rounded-lg border border-[#1A1720]/10 bg-[#F4F5F1] px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF]"
           />
         </div>
         <div>
-          <span className="mb-1 block text-xs font-medium text-[#8A8579]">Moteur</span>
+          <span className="mb-1 block font-[IBM_Plex_Mono,monospace] text-[10px] font-medium uppercase tracking-[0.1em] text-[#9C96B5]">
+            Moteur
+          </span>
           <select
             value={moteur}
             onChange={(e) => setMoteur(e.target.value as MoteurIA)}
-            className="rounded-lg border border-[#EAE5D9] bg-[#FBFAF6] px-3 py-2 text-sm text-[#3D3A34] outline-none focus:border-[#7B6EF6]"
+            className="rounded-lg border border-[#1A1720]/10 bg-[#F4F5F1] px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF]"
           >
             <option value="perplexity">Perplexity</option>
             <option value="chatgpt">ChatGPT</option>
             <option value="gemini">Gemini</option>
+            <option value="claude">Claude</option>
           </select>
         </div>
         <button
           onClick={handleVerifier}
           disabled={loading || !nouvelleRequete}
-          className="rounded-lg bg-[#3D3A34] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {loading ? "Vérification…" : "Vérifier maintenant"}
         </button>
       </div>
 
-      {error && <p className="mb-3 text-sm text-[#D5473B]">{error}</p>}
+      {error && <p className="mb-3 text-sm text-[#FF3D7F]">{error}</p>}
 
       <MonitoringTable rows={rows} />
     </section>

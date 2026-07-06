@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import puppeteer from 'puppeteer';
 import { Resend } from 'resend';
+import { auth } from '@/auth';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,19 +11,46 @@ const supabaseAdmin = createClient(
 
 const resend = new Resend(process.env.AUTH_RESEND_KEY!);
 
+const STORAGE_BUCKET = 'reports';
+
 export async function POST(request: NextRequest) {
   let browser;
   try {
-    const { clientId, userEmail, clientName } = await request.json();
+    const session = await auth();
+    const userId = session?.user?.id as string | undefined;
+    const userEmailConnecte = session?.user?.email as string | undefined;
 
-    if (!clientId || !userEmail) {
-      return NextResponse.json({ error: 'Client ID and User Email are required' }, { status: 400 });
+    if (!userId || !userEmailConnecte) {
+      return NextResponse.json({ error: 'Session introuvable — reconnecte-toi.' }, { status: 401 });
     }
 
-    // 1. Récupération des dernières analyses IA et KPI pour construire le rapport
+    const { clientId } = await request.json();
+
+    if (!clientId) {
+      return NextResponse.json({ error: 'Client ID requis' }, { status: 400 });
+    }
+
+    // 1. Récupération du client (nom + email officiel, pas celui envoyé par le front)
+    const { data: client, error: clientError } = await supabaseAdmin
+      .from('clients')
+      .select('id, nom, email, manager_id, collaborateur_id')
+      .eq('id', clientId)
+      .single();
+
+    if (clientError || !client) {
+      return NextResponse.json({ error: 'Client introuvable.' }, { status: 404 });
+    }
+
+    if (!client.email) {
+      return NextResponse.json({ error: "Ce client n'a pas d'email renseigné." }, { status: 400 });
+    }
+
+    const clientName = client.nom;
+
+    // 2. Récupération des dernières analyses IA et KPI pour construire le rapport
     const { data: snapshots, error: dbError } = await supabaseAdmin
       .from('kpi_snapshots')
-      .select('source, data')
+      .select('id, source, data')
       .eq('client_id', clientId);
 
     if (dbError || !snapshots || snapshots.length === 0) {
@@ -33,16 +61,15 @@ export async function POST(request: NextRequest) {
     const dataMap: Record<string, any> = {};
     snapshots.forEach(s => dataMap[s.source] = s.data);
 
-    // 2. Définition du Template HTML/CSS (Design pro matching AgenceAI)
+    // 3. Définition du Template HTML/CSS (Design pro matching AgenceAI)
     const currentDate = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-    
+
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="fr">
       <head>
         <meta charset="UTF-8">
         <style>
-          @import url('https://googleapis.com');
           body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
@@ -54,7 +81,7 @@ export async function POST(request: NextRequest) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-b: 2px solid #f1f5f9;
+            border-bottom: 2px solid #f1f5f9;
             padding-bottom: 20px;
             margin-bottom: 40px;
           }
@@ -123,7 +150,7 @@ export async function POST(request: NextRequest) {
           }
           .footer {
             margin-top: 60px;
-            border-t: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
             padding-top: 20px;
             text-align: center;
             font-size: 11px;
@@ -169,33 +196,79 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // 3. Initialisation de Puppeteer Headless pour imprimer le PDF
+    // 4. Initialisation de Puppeteer Headless pour imprimer le PDF
     browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-    
+
     const page = await browser.newPage();
-    
-    // Charger le contenu HTML généré dynamiquement
     await page.setContent(htmlContent, { waitUntil: 'load' });
 
-    // Génération du Buffer binaire du PDF au format A4
     const pdfUint8Array = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
-      });
-      
-      // 2. Conversion sécurisée du Uint8Array en chaîne Base64
-    const pdfBase64 = Buffer.from(pdfUint8Array).toString('base64');
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
+    });
 
     await browser.close();
+    browser = undefined;
 
-    // 4. Envoi du fichier PDF par Email en pièce jointe avec la Resend API
+    const pdfBuffer = Buffer.from(pdfUint8Array);
+    const pdfBase64 = pdfBuffer.toString('base64');
+
+    // 5. Upload du PDF dans Supabase Storage (le "PC" du serveur / stockage persistant)
+    const safeClientName = (clientName || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileName = `Rapport_${safeClientName}_${Date.now()}.pdf`;
+    const storagePath = `${clientId}/${fileName}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from(STORAGE_BUCKET)
+      .upload(storagePath, pdfBuffer, {
+        contentType: 'application/pdf',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error('Erreur upload storage:', uploadError);
+      return NextResponse.json({ error: "Échec de l'enregistrement du PDF." }, { status: 500 });
+    }
+
+    // Si le bucket est public : URL publique directe
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(storagePath);
+
+    const fileUrl = publicUrlData.publicUrl;
+
+    // 6. Enregistrement de la ligne dans la table "rapports"
+    const periode = new Date();
+    periode.setDate(1); // premier jour du mois en cours
+
+    const { error: insertError } = await supabaseAdmin
+      .from('rapports')
+      .insert({
+        kpi_id: snapshots[0].id,
+        periode: periode.toISOString().slice(0, 10), // format date YYYY-MM-DD
+        bilan: `Rapport généré automatiquement — ${snapshots.length} source(s) KPI agrégée(s).`,
+        client_id: clientId,
+        file_url: fileUrl,
+        generated_by: userId,
+      });
+
+    if (insertError) {
+      console.error('Erreur insertion rapports:', insertError);
+      // On continue quand même (le PDF existe et sera envoyé), mais on log l'erreur
+    }
+
+    // 7. Envoi du PDF par email à l'utilisateur connecté ET au client
+    const destinataires = [userEmailConnecte, client.email].filter(
+      (email, index, arr) => !!email && arr.indexOf(email) === index // dédoublonne si même email
+    );
+
     await resend.emails.send({
-      from: 'AgenceAI Rapports <alertes@votre-domaine.com>', // Remplacez par votre domaine validé Resend
-      to: userEmail,
+      from: 'AgenceAI Rapports <alertes@votre-domaine.com>', // Remplace par ton domaine validé Resend
+      to: destinataires,
       subject: `📊 Votre Rapport Mensuel Performance — ${currentDate}`,
       html: `
         <p>Bonjour,</p>
@@ -206,13 +279,19 @@ export async function POST(request: NextRequest) {
       `,
       attachments: [
         {
-          filename: `Rapport_Mensuel_${clientName || 'Client'}_${currentDate.replace(' ', '_')}.pdf`,
+          filename: fileName,
           content: pdfBase64,
         }
       ]
     });
 
-    return NextResponse.json({ success: true, message: 'Le rapport PDF a été généré et transmis par email avec succès.' }, { status: 200 });
+    // 8. Réponse HTTP : renvoie aussi le PDF pour permettre le téléchargement navigateur côté front
+    return new NextResponse(pdfUint8Array, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=${fileName}`,
+      },
+    });
 
   } catch (error: any) {
     if (browser) await browser.close();

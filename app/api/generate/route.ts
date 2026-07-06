@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     .from("contenus")
     .select("plateforme, texte")
     .eq("client_id", clientId)
-    .eq("statut", "Apprové")
+    .eq("statut", "Approuvé")
     .eq("plateforme", platform)
     .limit(3);
 

@@ -9,8 +9,39 @@ import {
   deleteCollaborateur,
 } from "@/lib/supabase/collaborateur";
 import type { Collaborateur, CollaborateurFormData } from "@/types/users";
+import {
+  ChevronLeft,
+  Pencil,
+  Trash2,
+  Mail,
+  Phone,
+  CalendarClock,
+  UserCog,
+} from "lucide-react";
+function InfoCard({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: any;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white p-5">
+      <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
 
-// ─── Vue détail ───────────────────────────────────────────────
+      <div className="mb-2 flex items-center gap-2">
+        <Icon size={14} className="text-[#9C96B5]" />
+
+        <p className="text-[10px] uppercase tracking-[0.15em] text-[#9C96B5] font-medium font-[IBM_Plex_Mono,monospace]">
+          {label}
+        </p>
+      </div>
+      {children}
+    </div>
+  );
+}
 function CollaborateurView({
   collaborateur,
   onEdit,
@@ -24,66 +55,73 @@ function CollaborateurView({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-violet-700 text-lg font-semibold">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF3D7F]/15 to-[#6C4CFF]/15 text-xl font-bold text-[#FF3D7F] font-[Space_Grotesk,sans-serif]">
               {profile.nom?.[0]?.toUpperCase()}
               {profile.prenom?.[0]?.toUpperCase()}
             </div>
+
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">
+              <h2 className="text-xl font-bold text-[#1A1720] font-[Space_Grotesk,sans-serif]">
                 {profile.nom} {profile.prenom}
               </h2>
-              <span className="inline-flex rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
+
+              <span className="mt-2 inline-flex rounded-full bg-[#6C4CFF]/10 px-2.5 py-1 text-xs font-medium text-[#6C4CFF] font-[IBM_Plex_Mono,monospace]">
                 {profile.role}
               </span>
             </div>
           </div>
+
           <div className="flex gap-2">
             <button
               onClick={onEdit}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-[#1A1720]/10 px-3.5 py-2 text-sm font-medium text-[#1A1720] hover:bg-[#F4F5F1] transition-colors"
             >
+              <Pencil size={14} />
               Modifier
             </button>
+
             <button
               onClick={onDelete}
-              className="rounded-lg border border-red-100 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-[#FF3D7F]/25 px-3.5 py-2 text-sm font-medium text-[#FF3D7F] hover:bg-[#FF3D7F]/10 transition-colors"
             >
+              <Trash2 size={14} />
               Supprimer
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Infos */}
-        <div className="border-t border-zinc-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-zinc-400 mb-1">Nom</p>
-            <p className="text-sm text-zinc-800 font-medium">{profile.nom}</p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-400 mb-1">Prénom</p>
-            <p className="text-sm text-zinc-800 font-medium">{profile.prenom}</p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-400 mb-1">Téléphone</p>
-            <p className="text-sm text-zinc-800">
-              {profile.telephone || <span className="text-zinc-300">—</span>}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-zinc-400 mb-1">Membre depuis</p>
-            <p className="text-sm text-zinc-800">
-              {new Date(profile.created_at).toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
+      {/* Infos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InfoCard icon={Mail} label="Email">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {profile.email || "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={Phone} label="Téléphone">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {profile.telephone || "—"}
+          </p>
+        </InfoCard>
+
+        <InfoCard icon={UserCog} label="Rôle">
+          <p className="text-sm font-medium text-[#1A1720]">{profile.role}</p>
+        </InfoCard>
+
+        <InfoCard icon={CalendarClock} label="Membre depuis">
+          <p className="text-sm font-medium text-[#1A1720]">
+            {new Date(profile.created_at).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </InfoCard>
       </div>
     </div>
   );
@@ -105,7 +143,7 @@ function CollaborateurEditForm({
     nom: profile.nom,
     prenom: profile.prenom,
     telephone: profile.telephone ?? "",
-    email:profile.email??"",
+    email: profile.email ?? "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +194,7 @@ function CollaborateurEditForm({
               type="text"
               value={form.nom}
               onChange={(e) => setField("nom", e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
             />
           </div>
 
@@ -169,7 +207,7 @@ function CollaborateurEditForm({
               type="text"
               value={form.prenom}
               onChange={(e) => setField("prenom", e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
             />
           </div>
         </div>
@@ -183,7 +221,7 @@ function CollaborateurEditForm({
             value={form.telephone}
             onChange={(e) => setField("telephone", e.target.value)}
             placeholder="+216 XX XXX XXX"
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
           />
         </div>
       </section>
@@ -193,7 +231,7 @@ function CollaborateurEditForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#e02f6c] disabled:opacity-50 transition-colors"
         >
           {loading ? (
             <>
@@ -254,7 +292,7 @@ export default function CollaborateurPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF3D7F] border-t-transparent" />
       </div>
     );
   }
@@ -277,24 +315,28 @@ export default function CollaborateurPage() {
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2">
         <Link
           href="/dashboard/collaborateurs"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors"
+          className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
         >
-          ← Collaborateurs
+          <ChevronLeft size={15} />
+          Collaborateurs
         </Link>
-        <span className="text-zinc-200">/</span>
-        <span className="text-zinc-600">
+
+        <span className="text-[#1A1720]/15">/</span>
+
+        <span className="text-sm font-medium text-[#1A1720]">
           {collaborateur.profiles.nom} {collaborateur.profiles.prenom}
         </span>
+
         {editMode && (
           <>
-            <span className="text-zinc-200">/</span>
-            <span className="text-zinc-400">Modifier</span>
+            <span className="text-[#1A1720]/15">/</span>
+            <span className="text-sm text-[#9C96B5]">Modifier</span>
           </>
         )}
-      </nav>
+      </div>
 
       {/* Contenu */}
       {editMode ? (
