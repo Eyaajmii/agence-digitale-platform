@@ -285,11 +285,10 @@ export async function POST(request: NextRequest) {
       ]
     });
 
-    // 8. Réponse HTTP : renvoie aussi le PDF pour permettre le téléchargement navigateur côté front
-    return new NextResponse(pdfUint8Array, {
+    return new NextResponse(pdfUint8Array.buffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=${fileName}`,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
 
