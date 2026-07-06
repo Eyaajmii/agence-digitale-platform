@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       ]
     });
 
-    return new NextResponse(pdfUint8Array.buffer, {
+    return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${fileName}"`,
