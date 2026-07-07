@@ -269,7 +269,7 @@ function ClientEditForm({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [collaborateurs, setCollaborateurs] = useState<any[]>([]);non
+  const [collaborateurs, setCollaborateurs] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadCollaborateurs() {
