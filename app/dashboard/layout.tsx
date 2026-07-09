@@ -104,7 +104,7 @@ export default function DashboardLayout({
           </div>*/}
           <div className="ml-3 relative">
             <h2 className="font-[Space_Grotesk,sans-serif] font-bold text-white text-lg tracking-tight">
-              Lezarts Digital
+            Lezarts Digital Hub
             </h2>
             <p className="text-[10px] uppercase tracking-[0.18em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
               Digital Marketing Studio
