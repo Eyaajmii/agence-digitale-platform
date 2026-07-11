@@ -38,7 +38,10 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Erreur Google Vault OAuth:", error);
     return NextResponse.json(
-      { error: "Erreur OAuth Google" },
+      { 
+        error: "Erreur OAuth Google",
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }
