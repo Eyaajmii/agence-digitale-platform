@@ -27,7 +27,9 @@ export async function GET(req: NextRequest) {
     const { error } = await supabaseAdmin.rpc("insert_oauth_secret", {
       p_client_id: clientId,
       p_provider: "google",
-      p_secret_data: secretPayload,
+      p_access_token: tokenData.access_token,
+      p_refresh_token: tokenData.refresh_token,
+      p_expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
     });
 
     if (error) throw error;
@@ -35,12 +37,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(
       `${process.env.AUTH_URL}/oauth-success?client=${clientId}`
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur Google Vault OAuth:", error);
+  
+    // Supabase PostgrestError a cette forme : { message, details, hint, code }
+    const errorMessage =
+      error?.message ||
+      error?.error_description ||
+      error?.error ||
+      (typeof error === "string" ? error : JSON.stringify(error));
+  
     return NextResponse.json(
-      { 
+      {
         error: "Erreur OAuth Google",
-        details: error instanceof Error ? error.message : String(error)
+        details: errorMessage,
+        code: error?.code || null,
       },
       { status: 500 }
     );
