@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
 
     return NextResponse.redirect(
-      `${process.env.AUTH_URL}/dashboard/clients/${clientId}`
+      `${process.env.AUTH_URL}/oauth-success?client=${clientId}`
     );
   } catch (error) {
     console.error("Erreur Google Vault OAuth:", error);
