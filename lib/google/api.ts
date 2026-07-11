@@ -65,3 +65,26 @@ export async function refreshGoogleToken(refreshToken: string) {
 
   return data;
 }
+export async function listGoogleAdsCustomers(accessToken: string) {
+  const response = await fetch(
+    "https://googleads.googleapis.com/v17/customers:listAccessibleCustomers",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+      },
+    }
+  );
+  const data = await response.json();
+  return data.resourceNames; // ex: ["customers/1234567890"]
+}
+export async function listGA4Properties(accessToken: string) {
+  const response = await fetch(
+    "https://analyticsadmin.googleapis.com/v1beta/accountSummaries",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+  const data = await response.json();
+  return data.accountSummaries; // contient propertySummaries avec les IDs
+}
