@@ -30,13 +30,23 @@ export async function exchangeGoogleCodeForToken(code: string) {
       grant_type: "authorization_code",
     }),
   });
+  const text = await response.text();
 
-  const data = await response.json();
+  console.log("Google token response:", text);
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Google a retourné du HTML: ${text.substring(0, 300)}`);
+  }
 
   if (!response.ok) {
-    console.error("Erreur Google token exchange:", data);
     throw new Error(
-      data.error_description || data.error || "Erreur récupération token Google"
+      data.error_description ||
+      data.error ||
+      "Erreur récupération token Google"
     );
   }
 
