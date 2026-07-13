@@ -14,8 +14,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const tokenData = await exchangeGoogleCodeForToken(code);
+    console.log("TOKEN OK");
+
     const adsCustomers = await listGoogleAdsCustomers(tokenData.access_token);
+    console.log("ADS OK");
+
     const ga4Properties = await listGA4Properties(tokenData.access_token);
+    console.log("GA4 OK");
     /* نلمو الداتا الحساسة الكل مع بعضها بما فيها الـ refresh_token والـ access_token
     const secretPayload = JSON.stringify({
       access_token: tokenData.access_token,
