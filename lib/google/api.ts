@@ -79,22 +79,60 @@ export async function listGoogleAdsCustomers(accessToken: string) {
   const response = await fetch(
     "https://googleads.googleapis.com/v17/customers:listAccessibleCustomers",
     {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "developer-token": process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
       },
     }
   );
-  const data = await response.json();
-  return data.resourceNames; // ex: ["customers/1234567890"]
+
+  const text = await response.text();
+
+  console.log("Google Ads status:", response.status);
+  console.log("Google Ads response:", text);
+
+  if (!response.ok) {
+    throw new Error(`Google Ads API Error ${response.status}`);
+  }
+
+  const data = JSON.parse(text);
+  return data.resourceNames ?? [];
 }
 export async function listGA4Properties(accessToken: string) {
   const response = await fetch(
     "https://analyticsadmin.googleapis.com/v1beta/accountSummaries",
     {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     }
   );
+
+  const text = await response.text();
+
+  console.log("GA4 STATUS:", response.status);
+  console.log("GA4 RESPONSE:", text);
+
+  if (!response.ok) {
+    throw new Error(`GA4 Error ${response.status}`);
+  }
+
+  return JSON.parse(text);
+}
+export async function listSearchConsoleSites(
+  accessToken: string
+) {
+  const response = await fetch(
+    "https://www.googleapis.com/webmasters/v3/sites",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
   const data = await response.json();
-  return data.accountSummaries; // contient propertySummaries avec les IDs
+
+  return data.siteEntry ?? [];
 }

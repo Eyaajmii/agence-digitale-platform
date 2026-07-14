@@ -1,5 +1,5 @@
 // src/components/NotificationDropdown.tsx
-'use client';
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
@@ -9,7 +9,7 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'critical' | 'warning' | 'info' | 'system';
+  type: "critical" | "warning" | "info" | "system";
   source?: string;
   is_read: boolean;
   created_at: string;
@@ -61,12 +61,17 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
   );
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [activeTab, setActiveTab] = useState<'Toutes' | 'Alertes KPI' | 'IA' | 'Système'>('Toutes');
+  const [activeTab, setActiveTab] = useState<
+    "Toutes" | "Alertes KPI" | "IA" | "Système"
+  >("Toutes");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -76,22 +81,30 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const { data } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      console.log("DATA", data);
+      console.log("ERROR", error);
       if (data) setNotifications(data);
     };
 
     fetchNotifications();
 
     const channel = supabase
-      .channel('realtime-notifications')
+      .channel("realtime-notifications")
       .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        (payload: { new: Notification; }) => {
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload: { new: Notification }) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
         }
       )
@@ -103,30 +116,39 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
   }, [userId, supabase]);
 
   const handleMarkAllAsRead = async () => {
-    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
     if (unreadIds.length === 0) return;
 
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .in("id", unreadIds);
   };
 
   const handleToggleRead = async (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: !n.is_read } : n));
-    const target = notifications.find(n => n.id === id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: !n.is_read } : n))
+    );
+    const target = notifications.find((n) => n.id === id);
     if (target) {
-      await supabase.from('notifications').update({ is_read: !target.is_read }).eq('id', id);
+      await supabase
+        .from("notifications")
+        .update({ is_read: !target.is_read })
+        .eq("id", id);
     }
   };
 
-  const filteredNotifications = notifications.filter(n => {
-    if (activeTab === 'Toutes') return true;
-    if (activeTab === 'Alertes KPI') return n.type === 'critical' || n.type === 'warning';
-    if (activeTab === 'IA') return n.type === 'info';
-    if (activeTab === 'Système') return n.type === 'system';
+  const filteredNotifications = notifications.filter((n) => {
+    if (activeTab === "Toutes") return true;
+    if (activeTab === "Alertes KPI")
+      return n.type === "critical" || n.type === "warning";
+    if (activeTab === "IA") return n.type === "info";
+    if (activeTab === "Système") return n.type === "system";
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const formatTime = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -134,7 +156,7 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
     if (mins < 60) return `Il y a ${mins} min`;
     const hours = Math.floor(mins / 60);
     if (hours < 24) return `Il y a ${hours}h`;
-    return new Date(dateStr).toLocaleDateString('fr-FR');
+    return new Date(dateStr).toLocaleDateString("fr-FR");
   };
 
   return (
@@ -178,19 +200,21 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
 
           {/* Onglets */}
           <div className="flex border-b border-[#1A1720]/10 bg-[#F4F5F1]/50 px-2">
-            {(['Toutes', 'Alertes KPI', 'IA', 'Système'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 border-b-2 py-3 text-center text-xs font-medium transition-all ${
-                  activeTab === tab
-                    ? "border-[#FF3D7F] font-semibold text-[#1A1720]"
-                    : "border-transparent text-[#9C96B5] hover:text-[#1A1720]"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {(["Toutes", "Alertes KPI", "IA", "Système"] as const).map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex-1 border-b-2 py-3 text-center text-xs font-medium transition-all ${
+                    activeTab === tab
+                      ? "border-[#FF3D7F] font-semibold text-[#1A1720]"
+                      : "border-transparent text-[#9C96B5] hover:text-[#1A1720]"
+                  }`}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </div>
 
           {/* Liste */}
@@ -211,11 +235,15 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
                     }`}
                   >
                     {!n.is_read && (
-                      <span className={`absolute left-3 top-7 h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                      <span
+                        className={`absolute left-3 top-7 h-1.5 w-1.5 rounded-full ${style.dot}`}
+                      />
                     )}
 
                     <div className="flex-shrink-0">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${style.iconBg} ${style.iconText}`}>
+                      <div
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl ${style.iconBg} ${style.iconText}`}
+                      >
                         <Icon size={20} />
                       </div>
                     </div>
@@ -237,7 +265,9 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
                             {n.source}
                           </span>
                         )}
-                        <span className={`rounded-md px-2 py-0.5 font-bold uppercase ${style.badgeBg} ${style.badgeText}`}>
+                        <span
+                          className={`rounded-md px-2 py-0.5 font-bold uppercase ${style.badgeBg} ${style.badgeText}`}
+                        >
                           {style.label}
                         </span>
                       </div>

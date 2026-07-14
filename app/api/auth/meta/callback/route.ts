@@ -26,18 +26,30 @@ export async function GET(req: NextRequest) {
       access_token: tokenData.access_token,
       expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
     });*/
+    console.log("META TOKEN DATA");
+    console.log(JSON.stringify(tokenData, null, 2));
 
+    console.log("REFRESH TOKEN =", tokenData.refresh_token);
     // تعيطي للـ RPC اللي تصب مشفر بـ AES-256 في وسط الـ Vault
-    const { error } = await supabaseAdmin.rpc("insert_oauth_secret", {
+    const rpcPayload = {
       p_client_id: clientId,
       p_provider: "meta",
       p_access_token: tokenData.access_token,
-      p_refresh_token: tokenData.refresh_token,
+      p_refresh_token: tokenData.refresh_token ?? "",
       p_expires_at: new Date(
         Date.now() + tokenData.expires_in * 1000
       ).toISOString(),
-      p_account_id: adsmMeta?.[0]?.id || null,
-    });
+      p_account_id: adsmMeta?.[0]?.id ?? null,
+    };
+    
+    console.log("RPC PAYLOAD");
+    console.log(JSON.stringify(rpcPayload, null, 2));
+    
+    const { error } = await supabaseAdmin.rpc(
+      "insert_oauth_secret",
+      rpcPayload
+    );
+
     if (error) throw error;
 
     const { error: clientUpdateError } = await supabaseAdmin
