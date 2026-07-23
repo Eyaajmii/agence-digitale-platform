@@ -18,38 +18,41 @@ interface Notification {
 const TYPE_STYLES = {
   critical: {
     icon: Flame,
-    iconBg: "bg-[#FF3D7F]/10",
-    iconText: "text-[#FF3D7F]",
-    dot: "bg-[#FF3D7F]",
-    badgeBg: "bg-[#FF3D7F]/10",
-    badgeText: "text-[#FF3D7F]",
+    iconBg: "bg-red-50",
+    iconText: "text-red-600",
+    dot: "bg-red-500",
+    badgeBg: "bg-red-50",
+    badgeText: "text-red-700",
     label: "Critique",
   },
+
   warning: {
     icon: AlertTriangle,
     iconBg: "bg-amber-50",
     iconText: "text-amber-600",
-    dot: "bg-amber-400",
+    dot: "bg-amber-500",
     badgeBg: "bg-amber-50",
     badgeText: "text-amber-700",
     label: "Alerte",
   },
+
   info: {
     icon: Bot,
-    iconBg: "bg-[#6C4CFF]/10",
-    iconText: "text-[#6C4CFF]",
-    dot: "bg-[#6C4CFF]",
-    badgeBg: "bg-[#6C4CFF]/10",
-    badgeText: "text-[#6C4CFF]",
+    iconBg: "bg-blue-50",
+    iconText: "text-blue-600",
+    dot: "bg-blue-500",
+    badgeBg: "bg-blue-50",
+    badgeText: "text-blue-700",
     label: "IA",
   },
+
   system: {
     icon: Layers,
-    iconBg: "bg-[#1A1720]/5",
-    iconText: "text-[#6B6579]",
-    dot: "bg-[#9C96B5]",
-    badgeBg: "bg-[#1A1720]/5",
-    badgeText: "text-[#6B6579]",
+    iconBg: "bg-slate-100",
+    iconText: "text-slate-600",
+    dot: "bg-slate-400",
+    badgeBg: "bg-slate-100",
+    badgeText: "text-slate-700",
     label: "Système",
   },
 } as const;
@@ -164,12 +167,12 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
       {/* Bouton cloche */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-xl border border-[#1A1720]/10 bg-white p-2.5 text-[#6B6579] transition hover:bg-[#F4F5F1]"
+        className="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm transition hover:bg-slate-50 "
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF3D7F] font-[IBM_Plex_Mono,monospace] text-[10px] font-bold text-white ring-2 ring-white">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF3D7F] opacity-75" />
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 font-[IBM_Plex_Mono,monospace] text-[10px] font-bold text-white ring-2 ring-white">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-600 opacity-75" />
             <span className="relative">{unreadCount}</span>
           </span>
         )}
@@ -177,22 +180,36 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
 
       {/* Panneau déroulant */}
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-3 w-[450px] overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white shadow-xl">
+        <div
+          className="
+        absolute
+        right-0
+        z-50
+        mt-3
+        w-[450px]
+        overflow-hidden
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        shadow-lg
+        "
+        >
           {/* Entête */}
           <div className="flex items-center justify-between border-b border-[#1A1720]/10 p-5">
             <div className="flex items-center gap-2">
-              <span className="font-[Space_Grotesk,sans-serif] text-lg font-bold text-[#1A1720]">
+              <span className="font-semibold text-lg font-bold text-slate-900">
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <span className="rounded-full bg-[#FF3D7F]/10 px-2 py-0.5 font-[IBM_Plex_Mono,monospace] text-xs font-semibold text-[#FF3D7F]">
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 font-[IBM_Plex_Mono,monospace] text-xs font-semibold text-blue-700">
                   {unreadCount}
                 </span>
               )}
             </div>
             <button
               onClick={handleMarkAllAsRead}
-              className="rounded-xl border border-[#1A1720]/10 px-4 py-2 text-sm font-semibold text-[#1A1720] transition hover:bg-[#F4F5F1]"
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
             >
               Tout marquer lu
             </button>
@@ -207,8 +224,8 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 border-b-2 py-3 text-center text-xs font-medium transition-all ${
                     activeTab === tab
-                      ? "border-[#FF3D7F] font-semibold text-[#1A1720]"
-                      : "border-transparent text-[#9C96B5] hover:text-[#1A1720]"
+                      ? "border-blue-600 font-semibold text-slate-900"
+                      : "border-transparent bg-blue-50 hover:text-slate-900"
                   }`}
                 >
                   {tab}
@@ -220,7 +237,7 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
           {/* Liste */}
           <div className="max-h-[480px] divide-y divide-[#1A1720]/5 overflow-y-auto">
             {filteredNotifications.length === 0 ? (
-              <div className="p-8 text-center text-sm text-[#9C96B5]">
+              <div className="p-8 text-center text-sm bg-blue-50">
                 Aucune notification dans cette catégorie.
               </div>
             ) : (
@@ -231,7 +248,7 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
                   <div
                     key={n.id}
                     className={`relative flex gap-4 p-5 transition ${
-                      !n.is_read ? "bg-[#FF3D7F]/5" : "hover:bg-[#F4F5F1]/60"
+                      !n.is_read ? "bg-[#FF3D7F]/5" : "hover:bg-slate-50"
                     }`}
                   >
                     {!n.is_read && (
@@ -250,18 +267,18 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
 
                     <div className="flex-1 space-y-2">
                       <div>
-                        <h4 className="font-[Space_Grotesk,sans-serif] text-sm font-bold text-[#1A1720]">
+                        <h4 className="font-semibold text-sm font-bold text-slate-900">
                           {n.title}
                         </h4>
-                        <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-[#6B6579]">
+                        <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-slate-600">
                           {n.message}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-[11px] font-medium text-[#9C96B5]">
+                      <div className="flex items-center gap-2 font-[IBM_Plex_Mono,monospace] text-[11px] font-medium bg-blue-50">
                         <span>⏱️ {formatTime(n.created_at)}</span>
                         {n.source && (
-                          <span className="rounded-md bg-[#1A1720]/5 px-2 py-0.5 font-semibold text-[#6B6579]">
+                          <span className="rounded-md bg-[#1A1720]/5 px-2 py-0.5 font-semibold text-slate-400">
                             {n.source}
                           </span>
                         )}
@@ -275,7 +292,7 @@ export default function NotificationDropdown({ userId }: { userId: string }) {
                       <div className="flex gap-2 pt-1">
                         <button
                           onClick={() => handleToggleRead(n.id)}
-                          className="flex items-center gap-1.5 rounded-xl border border-[#1A1720]/10 bg-[#F4F5F1] px-4 py-2 text-xs font-semibold text-[#1A1720] transition hover:bg-white"
+                          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
                         >
                           <Check size={14} />
                           {n.is_read ? "Marquer non lu" : "Marquer lu"}

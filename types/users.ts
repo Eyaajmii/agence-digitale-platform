@@ -29,3 +29,10 @@ export interface Profile {
     email_agence: string
     fax_agence: string
   }
+  export interface PaginatedCollab {
+    data:        Collaborateur[]
+    total:       number
+    page:        number
+    per_page:    number
+    total_pages: number
+  }

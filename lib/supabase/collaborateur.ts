@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import type { Collaborateur, ProfileWithEmail, CollaborateurFormData } from "@/types/users";
+import type { Collaborateur, ProfileWithEmail, CollaborateurFormData, PaginatedCollab } from "@/types/users";
 import { getSession } from "next-auth/react";
 
 function db() {
@@ -21,37 +21,26 @@ async function fetchEmailById(userId: string): Promise<string> {
 }
 
 // ─── Lecture liste ────────────────────────────────────────────
-export async function getCollaborateurs(): Promise<Collaborateur[]> {
-  const supabase = db();
+export async function getCollaborateurs(
+  page = 1,
+  perPage = 10,
+  search = ""
+): Promise<PaginatedCollab> {
 
-  const { data, error } = await supabase.from("collaborateurs").select(`
-    id,
-    manager_id,
-    profiles (
-      id,
-      nom,
-      prenom,
-      telephone,
-      role,
-      created_at
-    )
-  `);
+  const params = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+    search,
+  });
 
-  if (error) throw new Error(error.message);
+  const res = await fetch(`/api/collaborateur?${params.toString()}`);
 
-  const collabs = data ?? [];
-
-  const withEmails = await Promise.all(
-    collabs.map(async (c) => {
-      const email = await fetchEmailById(c.id);
-      return {
-        ...c,
-        profiles: { ...c.profiles, email },
-      } as unknown as Collaborateur;
-    })
-  );
-
-  return withEmails;
+if (!res.ok) {
+  const body = await res.json().catch(() => null);
+  console.error("Erreur API collaborateur:", body); // ← ajoute ça
+  throw new Error("Erreur lors du chargement des collaborateurs");
+}
+  return await res.json();
 }
 
 // ─── Lecture par id ───────────────────────────────────────────

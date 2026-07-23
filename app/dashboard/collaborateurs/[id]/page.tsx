@@ -28,13 +28,11 @@ function InfoCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white p-5">
-      <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
-
-      <div className="mb-2 flex items-center gap-2">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all">
+      {" "}
+      <div className="flex items-center gap-2 mb-2">
         <Icon size={14} className="text-[#9C96B5]" />
-
-        <p className="text-[10px] uppercase tracking-[0.15em] text-[#9C96B5] font-medium font-[IBM_Plex_Mono,monospace]">
+        <p className="text-[11px]font-medium uppercase tracking-wider text-slate-400">
           {label}
         </p>
       </div>
@@ -56,16 +54,16 @@ function CollaborateurView({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white p-6">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF3D7F]/15 to-[#6C4CFF]/15 text-xl font-bold text-[#FF3D7F] font-[Space_Grotesk,sans-serif]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-xl font-bold text-blue-700">
               {profile.nom?.[0]?.toUpperCase()}
               {profile.prenom?.[0]?.toUpperCase()}
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-[#1A1720] font-[Space_Grotesk,sans-serif]">
+              <h2 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720]">
                 {profile.nom} {profile.prenom}
               </h2>
 
@@ -78,7 +76,7 @@ function CollaborateurView({
           <div className="flex gap-2">
             <button
               onClick={onEdit}
-              className="flex items-center gap-1.5 rounded-lg border border-[#1A1720]/10 px-3.5 py-2 text-sm font-medium text-[#1A1720] hover:bg-[#F4F5F1] transition-colors"
+              className="flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
             >
               <Pencil size={14} />
               Modifier
@@ -86,7 +84,7 @@ function CollaborateurView({
 
             <button
               onClick={onDelete}
-              className="flex items-center gap-1.5 rounded-lg border border-[#FF3D7F]/25 px-3.5 py-2 text-sm font-medium text-[#FF3D7F] hover:bg-[#FF3D7F]/10 transition-colors"
+              className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors"
             >
               <Trash2 size={14} />
               Supprimer
@@ -96,7 +94,7 @@ function CollaborateurView({
       </div>
 
       {/* Infos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid gap-5 lg:grid-cols-3">
         <InfoCard icon={Mail} label="Email">
           <p className="text-sm font-medium text-[#1A1720]">
             {profile.email || "—"}
@@ -108,11 +106,6 @@ function CollaborateurView({
             {profile.telephone || "—"}
           </p>
         </InfoCard>
-
-        <InfoCard icon={UserCog} label="Rôle">
-          <p className="text-sm font-medium text-[#1A1720]">{profile.role}</p>
-        </InfoCard>
-
         <InfoCard icon={CalendarClock} label="Membre depuis">
           <p className="text-sm font-medium text-[#1A1720]">
             {new Date(profile.created_at).toLocaleDateString("fr-FR", {
@@ -169,88 +162,107 @@ function CollaborateurEditForm({
       setLoading(false);
     }
   }
-
+  const inputClass =
+    "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
+  const labelClass = "mb-1 block text-sm font-medium text-slate-700";
+  const sectionLabelClass = "mb-4 text-base font-semibold text-slate-900";
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="max-w-5xl mx-auto p-6">
+      {" "}
+      <div className="mb-6">
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">
+          Modifier les informations
+        </h1>
+        <p className="mt-1 text-slate-500">
+          Modifier les informations d'un collaborateur.
+        </p>
+      </div>
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-[#FF3D7F]/30 bg-[#FF3D7F]/10 px-4 py-3 text-sm text-[#c72c68]">
           {error}
         </div>
       )}
-
-      {/* Infos générales */}
-      <section className="rounded-xl border border-zinc-200 bg-white p-6 space-y-4">
-        <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-          Infos générales
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Nom <span className="text-red-400">*</span>
-            </label>
-            <input
-              required
-              type="text"
-              value={form.nom}
-              onChange={(e) => setField("nom", e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-zinc-700">
-              Prénom <span className="text-red-400">*</span>
-            </label>
-            <input
-              required
-              type="text"
-              value={form.prenom}
-              onChange={(e) => setField("prenom", e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-zinc-700">
-            Téléphone
-          </label>
-          <input
-            type="tel"
-            value={form.telephone}
-            onChange={(e) => setField("telephone", e.target.value)}
-            placeholder="+216 XX XXX XXX"
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
-          />
-        </div>
-      </section>
-
-      {/* Actions */}
-      <div className="flex items-center gap-3 pt-2 border-t border-zinc-100">
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#e02f6c] disabled:opacity-50 transition-colors"
-        >
-          {loading ? (
-            <>
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Enregistrement…
-            </>
-          ) : (
-            "Enregistrer"
+      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        {" "}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
           )}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-zinc-200 px-5 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
-        >
-          Annuler
-        </button>
+
+          {/* Infos générales */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className={sectionLabelClass}>Infos générales</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-1">
+            <label className={labelClass}>
+                  Nom <span className="text-red-400">*</span>
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={form.nom}
+                  onChange={(e) => setField("nom", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1">
+              <label className={labelClass}>
+                  Prénom <span className="text-red-400">*</span>
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={form.prenom}
+                  onChange={(e) => setField("prenom", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+            <label className={labelClass}>
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                value={form.telephone}
+                onChange={(e) => setField("telephone", e.target.value)}
+                placeholder="+216 XX XXX XXX"
+                className={inputClass}
+                />
+            </div>
+          </section>
+
+          {/* Actions */}
+          <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white/90 backdrop-blur-sm p-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl border border-blue-500 bg-white px-4 py-3 text-sm outline-none resize-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            >
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Enregistrement…
+                </>
+              ) : (
+                "Enregistrer"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-lg border border-[#1A1720]/10 px-5 py-2.5 text-sm font-medium text-[#6B6579] hover:bg-[#F4F5F1] transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 }
 

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useGenerate } from "@/hooks/usegenerate";
 import { createBrowserClient } from "@supabase/ssr";
 import { addCalendrierEvent } from "@/lib/supabase/calendrier";
+import Link from "next/link";
+
 import {
   Sparkles,
   Search,
@@ -142,23 +144,48 @@ export default function GeneratePage() {
       setPlanning(false);
     }
   };
-
+  const inputClass = `
+w-full
+rounded-xl
+border
+border-slate-200
+bg-white
+px-4
+py-3
+text-sm
+text-slate-900
+outline-none
+focus:border-blue-500
+focus:ring-4
+focus:ring-blue-100
+transition-all
+`;
   return (
-    <div className="max-w-5xl mx-auto space-y-8 font-[Inter,sans-serif]">
+    <div className="max-w-7xl mx-auto p-6 space-y-6 font-[Inter,sans-serif]">
       {/* En-tête */}
-      <div className="flex items-center gap-3">
-        <div>
-          <h1 className="text-2xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
-            Générateur de contenu IA
-          </h1>
-          <p className="text-sm text-[#6B6579]">
-            Génère 3 variantes de copy publicitaire avec Claude en quelques secondes.
-          </p>
-        </div>
-      </div>
+      <div className="mb-6">
+        <Link
+          href="/dashboard/generate"
+          className="text-sm text-slate-500 hover:text-slate-900"
+        >
+          ← Retour
+        </Link>
 
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">
+        Générateur de contenu IA
+        </h1>
+
+        <p className="mt-1 text-slate-500">
+        Crée automatiquement plusieurs variantes de contenu marketing.
+        </p>
+      </div>
+      {error && (
+        <div className="rounded-lg border border-[#FF3D7F]/30 bg-[#FF3D7F]/10 px-4 py-3 text-sm text-[#c72c68]">
+          {error}
+        </div>
+      )}
       {/* Formulaire brief */}
-      <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-6 space-y-5">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
         <div>
           <label className="block text-sm font-medium text-[#1A1720] mb-1.5">
             Client <span className="text-[#FF3D7F]">*</span>
@@ -166,7 +193,7 @@ export default function GeneratePage() {
           <select
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
-            className="w-full rounded-lg border border-[#1A1720]/10 bg-white px-3.5 py-2.5 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/15 transition-all"
+            className={inputClass}
           >
             <option value="">— Sélectionner un client —</option>
             {clients.map((c) => (
@@ -192,7 +219,7 @@ export default function GeneratePage() {
                   onClick={() => setPlatform(p.value)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                     active
-                      ? "bg-[#1A1720] text-white border-[#1A1720]"
+                      ? "bg-blue-600 text-white hover:border-blue-300"
                       : "bg-white text-[#6B6579] border-[#1A1720]/10 hover:border-[#6C4CFF]/40 hover:text-[#1A1720]"
                   }`}
                 >
@@ -219,7 +246,7 @@ export default function GeneratePage() {
             onChange={(e) => setObjective(e.target.value)}
             placeholder="Ex: Promouvoir le lancement de notre nouvelle collection printemps-été, cibler les femmes 25-40 ans, générer des clics vers la boutique en ligne..."
             rows={3}
-            className="w-full rounded-lg border border-[#1A1720]/10 bg-white px-3.5 py-2.5 text-sm text-[#1A1720] outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/15 resize-none transition-all"
+            className={inputClass}
           />
         </div>
 
@@ -228,7 +255,7 @@ export default function GeneratePage() {
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#1A1720] text-white text-sm font-semibold rounded-lg hover:bg-[#2A2632] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {isStreaming ? (
               <>
@@ -264,10 +291,10 @@ export default function GeneratePage() {
 
       {/* Streaming preview */}
       {isStreaming && streamedText && (
-        <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-5">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF3D7F]" />
             </span>
             <span className="text-sm font-medium text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
@@ -290,15 +317,14 @@ export default function GeneratePage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid gap-5 xl:grid-cols-3 md:grid-cols-2">
             {variants.map((variant, i) => (
               <div
                 key={i}
-                className="relative overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white p-5 flex flex-col gap-4 hover:border-[#6C4CFF]/30 transition-colors"
+                className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 flex flex-col gap-4 hover:border-blue-300 transition-all shadow-sm hover:shadow-md"
               >
-                <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#6C4CFF] bg-[#6C4CFF]/10 px-2.5 py-1 rounded-full font-[IBM_Plex_Mono,monospace]">
+                  <span className="text-xs font-medium text-blue-700 bg-blue-70 px-2.5 py-1 rounded-full font-[IBM_Plex_Mono,monospace]">
                     Variante {i + 1}
                   </span>
                   <span className="text-xs text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
@@ -313,7 +339,7 @@ export default function GeneratePage() {
                 <div className="flex gap-2 pt-3 border-t border-[#1A1720]/10">
                   <button
                     onClick={() => handleCopy(variant, i)}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-[#F4F5F1] hover:bg-[#6C4CFF]/10 text-[#6B6579] hover:text-[#6C4CFF] transition-colors font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-blue-50 hover:bg-blue-50 text-[#6B6579] hover:text-blue-700 transition-colors font-medium"
                   >
                     {copiedIndex === i ? (
                       <>
@@ -329,14 +355,14 @@ export default function GeneratePage() {
                   </button>
                   <button
                     onClick={() => handleValidate(variant, i)}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-[#F4F5F1] hover:bg-emerald-50 text-[#6B6579] hover:text-emerald-700 transition-colors font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-700 transition-colors font-medium"
                   >
                     <Check size={13} />
                     Valider
                   </button>
                   <button
                     onClick={() => openPlanifier(i)}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-[#F4F5F1] hover:bg-[#FF3D7F]/10 text-[#6B6579] hover:text-[#FF3D7F] transition-colors font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-[#FF3D7F] transition-colors font-medium"
                   >
                     <CalendarPlus size={13} />
                     Planifier
@@ -351,7 +377,7 @@ export default function GeneratePage() {
       {/* Modale de planification */}
       {planningIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1720]/50 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-2xl border border-[#1A1720]/10 p-6 w-full max-w-sm space-y-4">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-6 w-full max-w-sm space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-[Space_Grotesk,sans-serif] font-semibold text-[#1A1720]">
                 Planifier la variante {planningIndex + 1}
@@ -371,7 +397,7 @@ export default function GeneratePage() {
                 type="date"
                 value={planningDate}
                 onChange={(e) => setPlanningDate(e.target.value)}
-                className="w-full rounded-lg border border-[#1A1720]/10 px-3.5 py-2.5 text-sm outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/15 transition-all"
+                className={inputClass}
               />
             </div>
             <div className="flex gap-3 pt-2">

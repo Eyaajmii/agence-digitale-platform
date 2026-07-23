@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getContentById } from "@/lib/supabase/contents";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 function PlatformBadge({ plateforme }: { plateforme: string }) {
   const styles: Record<string, string> = {
     Twitter: "bg-black/10 text-black",
@@ -94,6 +96,17 @@ export default function ContentDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6 font-[Inter,sans-serif]">
+      <div className="flex items-center gap-2">
+      <Link
+          href="/dashboard/generate"
+          className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
+        >
+          <ChevronLeft size={15} />
+          Contenu
+        </Link>
+        <span className="text-[#1A1720]/15">/</span>
+        <span className="text-sm text-[#1A1720] font-medium">{content.clients?.nom}</span>
+      </div>
       {/* Header */}
       <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">

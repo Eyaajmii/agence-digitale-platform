@@ -87,9 +87,9 @@ export default function CalendrierPage() {
       }
   
       .fc-button-active {
-        background: #FF3D7F !important;
+        background: blue !important;
         color: white !important;
-        border-color: #FF3D7F !important;
+        border-color: blue !important;
       }
   
       .fc-daygrid-day:hover {
@@ -274,7 +274,6 @@ export default function CalendrierPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="relative overflow-hidden rounded-3xl border border-[#1A1720]/10 bg-white p-6 w-full max-w-lg space-y-5">
-            <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF]" />
             {/* Modal — Planifier */}
             {selectedDate && !selectedEvent && (
               <>
@@ -315,7 +314,7 @@ export default function CalendrierPage() {
                   <button
                     onClick={handlePlanifier}
                     disabled={!selectedContenu || saving}
-                    className="flex-1 rounded-xl bg-[#FF3D7F] py-2.5 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors disabled:opacity-40"
+                    className="flex-1 rounded-xl bg-blue-500 py-2.5 text-sm font-medium text-white hover:bg-blue-400 transition-colors disabled:opacity-40"
                   >
                     {saving ? "Planification…" : "Planifier"}
                   </button>

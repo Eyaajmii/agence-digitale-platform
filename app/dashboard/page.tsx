@@ -44,7 +44,7 @@ export default async function DashboardPage() {
 
   if (!userId) {
     return (
-      <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-10 text-center text-[#6B6579] font-[Inter,sans-serif]">
+      <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-10 text-center text-slate-500 font-[Inter,sans-serif]">
         Session introuvable — reconnecte-toi.
       </div>
     );
@@ -248,8 +248,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6 font-[Inter,sans-serif]">
       {!hasClients ? (
-        <div className="rounded-2xl border border-dashed border-[#1A1720]/15 bg-white p-12 text-center">
-          <p className="text-[#6B6579]">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+          <p className="text-slate-500">
             Aucun client rattaché à ton compte pour le moment.
           </p>
         </div>
@@ -272,17 +272,29 @@ export default async function DashboardPage() {
                     ? "text-emerald-600"
                     : stat.trend.direction === "down"
                     ? "text-red-500"
-                    : "text-[#9C96B5]";
+                    : "text-slate-400";
                 return (
-                  <div key={stat.label} className="relative bg-white p-6">
-                    <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
+                  <div
+                    key={stat.label}
+                    className="
+bg-white
+rounded-xl
+border
+border-slate-200
+p-6
+shadow-sm
+hover:shadow-md
+transition-all
+duration-200
+"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-[#6B6579]">
+                      <span className="text-sm font-medium text-slate-500">
                         {stat.label}
                       </span>
-                      <Icon className="h-4 w-4 text-[#9C96B5]" />
+                      <Icon className="h-4 w-4 text-slate-400" />
                     </div>
-                    <p className="mt-3 text-3xl font-[Space_Grotesk,sans-serif] font-bold tabular-nums text-[#1A1720]">
+                    <p className="mt-3 text-3xl font-semibold font-bold tabular-nums text-slate-900">
                       {stat.value}
                     </p>
                     <p
@@ -301,12 +313,12 @@ export default async function DashboardPage() {
             {/* CLIENTS */}
             <div className="overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white xl:col-span-2">
               <div className="flex items-center justify-between border-b border-[#1A1720]/10 px-6 py-4">
-                <h2 className="text-sm font-[Space_Grotesk,sans-serif] font-semibold text-[#1A1720]">
+                <h2 className="text-sm font-semibold font-semibold text-slate-900">
                   Clients récents
                 </h2>
                 <a
                   href="/dashboard/clients"
-                  className="flex items-center gap-1 text-sm font-medium text-[#FF3D7F] hover:text-[#e02f6c]"
+                  className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:text-[#e02f6c]"
                 >
                   Voir tout
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -315,7 +327,7 @@ export default async function DashboardPage() {
 
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[#1A1720]/10 text-[10px] uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+                  <tr className="border-b border-[#1A1720]/10 text-[10px] uppercase tracking-[0.15em] text-slate-500 font-[IBM_Plex_Mono,monospace]">
                     <th className="px-6 py-3 font-medium">Client</th>
                     <th className="px-6 py-3 font-medium">Secteur</th>
                     <th className="hidden px-6 py-3 font-medium md:table-cell">
@@ -328,21 +340,21 @@ export default async function DashboardPage() {
                   {clientsRecents.map((client) => {
                     const actif = client.statut === "actif";
                     return (
-                      <tr key={client.id} className="hover:bg-[#F4F5F1]/60">
+                      <tr key={client.id} className="hover:bg-slate-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF3D7F]/15 to-[#6C4CFF]/15 text-sm font-[Space_Grotesk,sans-serif] font-semibold text-[#FF3D7F]">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 text-sm font-semibold font-semibold">
                               {client.nom?.charAt(0)?.toUpperCase() ?? "?"}
                             </div>
-                            <span className="font-medium text-[#1A1720]">
+                            <span className="font-medium text-slate-900">
                               {client.nom}
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-[#6B6579]">
+                        <td className="px-6 py-4 text-slate-500">
                           {client.secteur ?? "—"}
                         </td>
-                        <td className="hidden px-6 py-4 text-[#6B6579] md:table-cell">
+                        <td className="hidden px-6 py-4 text-slate-500 md:table-cell">
                           {collabNameById.get(client.collaborateur_id) || "—"}
                         </td>
                         <td className="px-6 py-4">
@@ -350,7 +362,7 @@ export default async function DashboardPage() {
                             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium font-[IBM_Plex_Mono,monospace] ${
                               actif
                                 ? "bg-emerald-50 text-emerald-700"
-                                : "bg-[#1A1720]/5 text-[#6B6579]"
+                                : "bg-amber-50 text-amber-700"
                             }`}
                           >
                             <span
@@ -371,7 +383,7 @@ export default async function DashboardPage() {
             {/* ACTIVITÉ */}
             <div className="rounded-2xl border border-[#1A1720]/10 bg-white">
               <div className="border-b border-[#1A1720]/10 px-6 py-4">
-                <h2 className="text-sm font-[Space_Grotesk,sans-serif] font-semibold text-[#1A1720]">
+                <h2 className="text-sm font-semibold font-semibold text-slate-900">
                   Activité récente
                 </h2>
               </div>
@@ -379,15 +391,15 @@ export default async function DashboardPage() {
                 {activityFeed.length > 0 ? (
                   activityFeed.map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#FF3D7F]" />
+                      <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-600" />
                       <div>
-                        <p className="text-sm text-[#6B6579]">
+                        <p className="text-sm text-slate-500">
                           {item.action}{" "}
-                          <span className="font-medium text-[#1A1720]">
+                          <span className="font-medium text-slate-900">
                             {item.cible}
                           </span>
                         </p>
-                        <p className="mt-0.5 text-xs text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+                        <p className="mt-0.5 text-xs text-slate-400 font-[IBM_Plex_Mono,monospace]">
                           {new Date(item.date).toLocaleDateString("fr-FR", {
                             day: "2-digit",
                             month: "short",
@@ -399,7 +411,7 @@ export default async function DashboardPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-[#9C96B5]">
+                  <p className="text-sm text-slate-400">
                     Aucune activité récente.
                   </p>
                 )}
@@ -409,37 +421,37 @@ export default async function DashboardPage() {
 
           {/* PERFORMANCE */}
           <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">
-            <h2 className="text-sm font-[Space_Grotesk,sans-serif] font-semibold text-[#1A1720]">
+            <h2 className="text-sm font-semibold font-semibold text-slate-900">
               Performance générale
             </h2>
-            <p className="mt-1 text-sm text-[#6B6579]">
+            <p className="mt-1 text-sm text-slate-500">
               Agrégée sur les 30 derniers jours, toutes plateformes connectées.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#1A1720]/10 bg-[#1A1720]/10 md:grid-cols-3">
-              <div className="bg-[#F4F5F1] p-5">
-                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+              <div className="bg-slate-50 p-5">
+                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-400 font-[IBM_Plex_Mono,monospace]">
                   Taux d'engagement (CTR)
                 </p>
-                <p className="mt-2 text-2xl font-[Space_Grotesk,sans-serif] font-bold tabular-nums text-[#1A1720]">
+                <p className="mt-2 text-2xl font-semibold font-bold tabular-nums text-slate-900">
                   {engagementRate !== null
                     ? `${engagementRate.toFixed(1)}%`
                     : "—"}
                 </p>
               </div>
-              <div className="bg-[#F4F5F1] p-5">
-                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+              <div className="bg-slate-50 p-5">
+                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-400 font-[IBM_Plex_Mono,monospace]">
                   Conversions
                 </p>
-                <p className="mt-2 text-2xl font-[Space_Grotesk,sans-serif] font-bold tabular-nums text-[#1A1720]">
+                <p className="mt-2 text-2xl font-semibold font-bold tabular-nums text-slate-900">
                   {totalConversions || "—"}
                 </p>
               </div>
-              <div className="bg-[#F4F5F1] p-5">
-                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+              <div className="bg-slate-50 p-5">
+                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-400 font-[IBM_Plex_Mono,monospace]">
                   Dépenses (30j)
                 </p>
-                <p className="mt-2 text-2xl font-[Space_Grotesk,sans-serif] font-bold tabular-nums text-[#1A1720]">
+                <p className="mt-2 text-2xl font-semibold font-bold tabular-nums text-slate-900">
                   {totalSpend ? `${totalSpend.toLocaleString("fr-FR")} €` : "—"}
                 </p>
               </div>

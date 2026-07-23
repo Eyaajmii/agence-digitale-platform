@@ -34,22 +34,6 @@ const nav = [
   { href: "/dashboard/aeo", label: "Campagnes AEO", icon: Search },
 ];
 
-// Petite waveform décorative — clin d'œil au thème "signal / broadcast"
-function Waveform() {
-  const bars = [4, 9, 6, 12, 5, 8, 3, 10, 6];
-  return (
-    <div className="flex items-end gap-[3px] h-4">
-      {bars.map((h, i) => (
-        <span
-          key={i}
-          className="w-[3px] rounded-full bg-[#6C4CFF]/50"
-          style={{ height: `${h}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function DashboardLayout({
   children,
 }: {
@@ -61,26 +45,23 @@ export default function DashboardLayout({
   const user = session?.user;
   const userId = session?.user?.id ?? "";
 
-  const displayName =
-    user?.name
-      ? ` ${user.name}`
-      : user?.name ?? "Manager";
+  const displayName = user?.name ? ` ${user.name}` : user?.name ?? "Manager";
 
-  const initials =
-     user?.name
-      ? `${user.name[0]}`.toUpperCase()
-      : displayName
-          .split(" ")
-          .map((w) => w[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
+  const initials = user?.name
+    ? `${user.name[0]}`.toUpperCase()
+    : displayName
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
 
   const roleLabel = user?.role ?? "Manager";
 
   const activeLabel = nav.find(
     (n) =>
-      pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href))
+      pathname === n.href ||
+      (n.href !== "/dashboard" && pathname.startsWith(n.href))
   )?.label;
   const filteredNav = nav.filter((item) => {
     if (roleLabel.toLowerCase() === "collaborateur") {
@@ -89,11 +70,14 @@ export default function DashboardLayout({
     return true;
   });
   return (
-    <div className="min-h-screen bg-[#F4F5F1] font-[Inter,sans-serif]">
+    <div className="min-h-screen bg-slate-50 font-[Inter,sans-serif]">
+      {" "}
       {/* SIDEBAR */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0D0B14] flex flex-col
-        transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 flex flex-col
+        transition-transform duration-300 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }
         lg:translate-x-0`}
       >
         {/* Logo */}
@@ -104,13 +88,10 @@ export default function DashboardLayout({
           </div>*/}
           <div className="ml-3 relative">
             <h2 className="font-[Space_Grotesk,sans-serif] font-bold text-white text-lg tracking-tight">
-            Lezarts Digital Hub
+              Lezarts Digital Hub
             </h2>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
-              Digital Marketing Studio
-            </p>
+            <p className="text-xs text-slate-400">Plateforme interne</p>
           </div>
-          
         </div>
 
         {/* Nav */}
@@ -119,7 +100,7 @@ export default function DashboardLayout({
             Navigation
           </p>
           <div className="space-y-1">
-          {filteredNav.map(({ href, label, icon: Icon }) => {
+            {filteredNav.map(({ href, label, icon: Icon }) => {
               const active =
                 pathname === href ||
                 (href !== "/dashboard" && pathname.startsWith(href));
@@ -130,67 +111,54 @@ export default function DashboardLayout({
                   className={`group flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-medium relative
                   ${
                     active
-                      ? "bg-white/5 text-white"
-                      : "text-[#9C96B5] hover:bg-white/5 hover:text-white"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   {/* barre de signal à gauche */}
-                  <span
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-full transition-all ${
-                      active ? "h-6 bg-[#FF3D7F]" : "h-0 bg-transparent"
-                    }`}
-                  />
+
                   <Icon size={18} strokeWidth={active ? 2.4 : 2} />
                   {label}
-                  {active && (
-                    <span className="ml-auto flex items-center gap-1.5">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF3D7F]" />
-                      </span>
-                    </span>
-                  )}
                 </Link>
               );
             })}
           </div>
         </div>
-        
+
         <div className="border-t border-white/10 p-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FF3D7F] to-[#6C4CFF] flex items-center justify-center text-white font-bold font-[Space_Grotesk,sans-serif]">
+            <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold font-[Space_Grotesk,sans-serif]">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium truncate">{displayName}</p>
+              <p className="text-sm text-white font-medium truncate">
+                {displayName}
+              </p>
               <p className="text-[10px] text-[#9C96B5] font-[IBM_Plex_Mono,monospace] uppercase tracking-wider">
                 {roleLabel}
               </p>
             </div>
-            <Waveform />
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/auth/login" })}
-            className="w-full flex items-center justify-center gap-2 rounded-lg border border-[#FF3D7F]/30 text-[#FF3D7F] py-3 text-sm font-medium
-            hover:bg-[#FF3D7F]/10 transition"
+            className="w-full flex items-center justify-center gap-2 rounded-lg border border-slate-700 text-slate-300
+            py-3 text-sm font-medium hover:bg-slate-800 transition "
           >
             <LogOut size={16} />
             Déconnexion
           </button>
         </div>
       </aside>
-
       {open && (
         <div
           onClick={() => setOpen(false)}
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
         />
       )}
-
       {/* CONTENT */}
       <div className="lg:ml-72 flex flex-col min-h-screen">
         {/* HEADER */}
-        <header className="sticky top-0 z-30 bg-[#F4F5F1]/90 backdrop-blur-xl border-b border-[#1A1720]/10 h-20 px-6 flex items-center">
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-gray-200 h-20 px-6 flex items-center">
           <button
             onClick={() => setOpen(!open)}
             className="lg:hidden mr-4 p-2 rounded-lg hover:bg-black/5"
@@ -199,15 +167,6 @@ export default function DashboardLayout({
           </button>
 
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#FF3D7F]" />
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#FF3D7F] font-[IBM_Plex_Mono,monospace] font-semibold">
-                En direct
-              </span>
-            </div>
             <h1 className="text-2xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
               {activeLabel}
             </h1>
@@ -215,16 +174,16 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-4">
             <NotificationDropdown userId={userId} />
-            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-[#1A1720]/10">
+            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-gray-200">
               <div className="text-right">
                 <p className="text-sm font-semibold text-[#1A1720] max-w-[160px] truncate">
                   {displayName}
                 </p>
-                <p className="text-[10px] text-[#6C4CFF] font-[IBM_Plex_Mono,monospace] uppercase tracking-wider">
-                  Connecté
+                <p className="text-[10px] text-slate-500 font-[IBM_Plex_Mono,monospace] uppercase tracking-wider">
+                  {roleLabel}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FF3D7F] to-[#6C4CFF] flex items-center justify-center text-white font-bold font-[Space_Grotesk,sans-serif]">
+              <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold font-[Space_Grotesk,sans-serif]">
                 {initials}
               </div>
             </div>
@@ -232,7 +191,7 @@ export default function DashboardLayout({
         </header>
 
         {/* PAGE */}
-        <main className="flex-1 p-8">{children}</main>
+        <main className="flex-1 p-6 lg:p-8">{children}</main>
         <ChatDrawer />
       </div>
     </div>

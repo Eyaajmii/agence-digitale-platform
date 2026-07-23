@@ -69,7 +69,7 @@ export default function TopBar({
         <button
           onClick={onGeneratePdf}
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
         >
           <FileDown className="h-3.5 w-3.5" />
           {loading ? "Génération & Envoi..." : "Générer Rapport PDF"}

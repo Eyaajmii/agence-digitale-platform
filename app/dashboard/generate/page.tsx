@@ -29,17 +29,7 @@ function getInitials(name: string) {
     .join("");
 }
 
-function getAvatarColor(name: string) {
-  const colors = [
-    "bg-[#6C4CFF]/10 text-[#6C4CFF]",
-    "bg-[#2D6FF2]/10 text-[#2D6FF2]",
-    "bg-[#2BB7C4]/10 text-[#1A8A95]",
-    "bg-[#FF3D7F]/10 text-[#FF3D7F]",
-    "bg-[#D6A32C]/10 text-[#95721B]",
-  ];
 
-  return colors[(name?.charCodeAt(0) || 0) % colors.length];
-}
 
 export default function ContentsPage() {
   const [contents, setContents] = useState<any[]>([]);
@@ -82,12 +72,12 @@ export default function ContentsPage() {
   }, [loadContents]);
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto font-[Inter,sans-serif]">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto font-[Inter,sans-serif]">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
-            Contenus générés
+            Liste des contenus générés
           </h1>
 
           <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
@@ -97,8 +87,8 @@ export default function ContentsPage() {
 
         <Link
           href="/dashboard/generate/addContent"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
-        >
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
           + Générer contenu
         </Link>
       </div>
@@ -141,100 +131,102 @@ export default function ContentsPage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#1A1720]/10 bg-[#F4F5F1] text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
-                <th className="px-4 py-3 text-left">Client</th>
-                <th className="px-4 py-3 text-left">Plateforme</th>
-                <th className="hidden lg:table-cell px-4 py-3 text-left">
-                  Objective
-                </th>
-                <th className="px-4 py-3 text-left">Statut</th>
-                <th className="hidden md:table-cell px-4 py-3 text-left">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+        <div className="grid gap-4">
+  {contents.map((content) => (
+    <div
+      key={content.id}
+      className="
+      bg-white
+      border
+      border-slate-200
+      rounded-2xl
+      p-5
+      shadow-sm
+      hover:shadow-md
+      transition-all
+      "
+    >
+      <div className="flex items-start justify-between gap-4">
+        {/* Partie gauche */}
+        <div className="flex items-center gap-4">
+         
+            {getInitials(content.clients?.nom || "Client")}
 
-            <tbody className="divide-y divide-[#1A1720]/5">
-              {contents.map((content) => (
-                <tr
-                  key={content.id}
-                  className="hover:bg-[#F4F5F1]/60 transition-colors"
-                >
-                  {/* Client */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${getAvatarColor(
-                          content.clients?.nom || "C"
-                        )}`}
-                      >
-                        {getInitials(content.clients?.nom || "Client")}
-                      </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {content.clients?.nom || "Client"}
+            </h3>
 
-                      <span className="font-medium text-[#1A1720]">
-                        {content.clients?.nom || "Client"}
-                      </span>
-                    </div>
-                  </td>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  PLATFORM_COLORS[content.plateforme] ||
+                  "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {PLATFORM_LABELS[
+                  content.plateforme as keyof typeof PLATFORM_LABELS
+                ] || content.plateforme}
+              </span>
 
-                  {/* Plateforme */}
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                        PLATFORM_COLORS[content.plateforme] ||
-                        "bg-[#1A1720]/5 text-[#6B6579]"
-                      }`}
-                    >
-                      {PLATFORM_LABELS[
-                        content.plateforme as keyof typeof PLATFORM_LABELS
-                      ] || content.plateforme}
-                    </span>
-                  </td>
-                  {/* Aperçu */}
-                  <td className="hidden lg:table-cell px-4 py-3">
-                    <div className="max-w-md truncate text-[#6B6579]">
-                      {content.objective}
-                    </div>
-                  </td>
-                  {/* Statut */}
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                        STATUS_COLORS[content.statut] ||
-                        "bg-[#1A1720]/5 text-[#6B6579]"
-                      }`}
-                    >
-                      {content.statut}
-                    </span>
-                  </td>
-
-                  {/* Date */}
-                  <td className="hidden md:table-cell px-4 py-3 text-[#6B6579]">
-                    {new Date(content.created_at).toLocaleDateString("fr-FR")}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end">
-                      <Link
-                        href={`/dashboard/generate/${content.id}`}
-                        className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
-                      >
-                        Voir
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  STATUS_COLORS[content.statut] ||
+                  "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {content.statut}
+              </span>
+            </div>
+          </div>
         </div>
+
+        {/* Action */}
+        <Link
+          href={`/dashboard/generate/${content.id}`}
+          className="
+          rounded-lg
+          border
+          border-slate-200
+          px-3
+          py-2
+          text-sm
+          hover:bg-slate-50
+          "
+        >
+          Voir
+        </Link>
+      </div>
+
+      {/* Infos */}
+      <div className="mt-5 grid gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Objectif
+          </p>
+
+          <p className="mt-1 text-sm text-slate-700 line-clamp-3">
+            {content.objective || "—"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Date de création
+          </p>
+
+          <p className="mt-1 text-sm text-slate-700">
+            {new Date(content.created_at).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
       )}
 
       {/* Pagination */}

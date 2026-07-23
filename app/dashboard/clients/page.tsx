@@ -9,18 +9,18 @@ import type { Client, PaginatedClients } from "@/types/clients";
 import { useSession } from "next-auth/react";
 import { Mail, MessageCircle, Link as LinkIcon, Check } from "lucide-react";
 
-const SECTOR_COLORS: Record<string, string> = {
-  "E-commerce": "bg-[#6C4CFF]/10 text-[#6C4CFF]",
-  Immobilier: "bg-[#2D6FF2]/10 text-[#2D6FF2]",
-  Restauration: "bg-[#E8823C]/10 text-[#B85F1F]",
-  "Mode & Beauté": "bg-[#FF3D7F]/10 text-[#FF3D7F]",
-  "Tech & SaaS": "bg-[#2BB7C4]/10 text-[#1A8A95]",
-  "Santé & Bien-être": "bg-[#3FAE6B]/10 text-[#2E8253]",
-  Finance: "bg-[#1A1720]/10 text-[#1A1720]",
-  Éducation: "bg-[#D6A32C]/10 text-[#95721B]",
-  Tourisme: "bg-[#3E9BD6]/10 text-[#2A749F]",
-  Sport: "bg-[#8CC63F]/10 text-[#5E8B24]",
-  Autre: "bg-[#9C96B5]/15 text-[#6B6579]",
+const SECTOR_COLORS = {
+  "E-commerce": "bg-blue-50 text-blue-700",
+  Immobilier: "bg-slate-100 text-slate-700",
+  Restauration: "bg-orange-50 text-orange-700",
+  "Mode & Beauté": "bg-pink-50 text-pink-700",
+  "Tech & SaaS": "bg-cyan-50 text-cyan-700",
+  "Santé & Bien-être": "bg-emerald-50 text-emerald-700",
+  Finance: "bg-indigo-50 text-indigo-700",
+  Éducation: "bg-yellow-50 text-yellow-700",
+  Tourisme: "bg-sky-50 text-sky-700",
+  Sport: "bg-lime-50 text-lime-700",
+  Autre: "bg-slate-100 text-slate-600",
 };
 
 function getInitials(nom: string) {
@@ -29,17 +29,6 @@ function getInitials(nom: string) {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
-}
-
-function getAvatarColor(nom: string) {
-  const colors = [
-    "bg-[#6C4CFF]/10 text-[#6C4CFF]",
-    "bg-[#2D6FF2]/10 text-[#2D6FF2]",
-    "bg-[#2BB7C4]/10 text-[#1A8A95]",
-    "bg-[#FF3D7F]/10 text-[#FF3D7F]",
-    "bg-[#D6A32C]/10 text-[#95721B]",
-  ];
-  return colors[nom.charCodeAt(0) % colors.length];
 }
 
 export default function ClientsPage() {
@@ -97,7 +86,7 @@ export default function ClientsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
-            Clients
+            La liste des clients
           </h1>
           {result && (
             <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
@@ -108,7 +97,7 @@ export default function ClientsPage() {
         {!isCollaborateur && (
           <Link
             href="/dashboard/clients/addClient"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#FF3D7F] px-4 py-2 text-sm font-medium text-white hover:bg-[#e02f6c] transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
           >
             + Nouveau client
           </Link>
@@ -122,11 +111,11 @@ export default function ClientsPage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Rechercher un client…"
-          className="flex-1 rounded-lg border border-[#1A1720]/10 bg-white px-3 py-2 text-sm text-[#1A1720] outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
+          className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
         <button
           type="submit"
-          className="rounded-lg border border-[#1A1720]/10 px-4 py-2 text-sm font-medium text-[#6B6579] hover:bg-[#1A1720]/5 transition-colors"
+          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
         >
           Rechercher
         </button>
@@ -138,7 +127,7 @@ export default function ClientsPage() {
               setSearchInput("");
               setPage(1);
             }}
-            className="rounded-lg border border-[#1A1720]/10 px-3 py-2 text-sm text-[#9C96B5] hover:text-[#1A1720]"
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500 hover:text-[#1A1720]"
           >
             ✕
           </button>
@@ -152,7 +141,7 @@ export default function ClientsPage() {
         </div>
       ) : result?.data.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[#1A1720]/15 py-20 text-center">
-          <p className="text-[#9C96B5] text-sm">
+          <p className="text-slate-500 text-sm">
             {search
               ? `Aucun résultat pour « ${search} »`
               : "Aucun client pour le moment."}
@@ -160,182 +149,145 @@ export default function ClientsPage() {
           {!search && !isCollaborateur && (
             <Link
               href="/dashboard/clients/addClient"
-              className="mt-3 inline-block text-sm font-medium text-[#FF3D7F] hover:underline"
+              className="mt-3 inline-block text-sm font-medium text-amber-600 hover:underline"
             >
               Créer votre premier client →
             </Link>
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#1A1720]/10 bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#1A1720]/10 bg-[#F4F5F1] text-[10px] font-medium uppercase tracking-[0.15em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
-                <th className="px-4 py-3 text-left">Client</th>
-                <th className="hidden px-4 py-3 text-left sm:table-cell">
-                  Secteur
-                </th>
-                <th className="hidden px-4 py-3 text-left md:table-cell">
-                  Ton
-                </th>
-                <th className="hidden px-4 py-3 text-left lg:table-cell">
-                  Exemples
-                </th>
-                <th className="hidden px-4 py-3 text-left lg:table-cell">
-                  Collaborateur
-                </th>
-                <th className="hidden px-4 py-3 text-left lg:table-cell">
-                  Statut
-                </th>
-                <th className="px-4 py-3 text-right">Actions</th>
-                <th className="px-4 py-3 text-right">Connexion</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#1A1720]/5">
-              {result?.data.map((client) => (
-                <tr
-                  key={client.id}
-                  className="hover:bg-[#F4F5F1]/60 transition-colors"
-                >
-                  {/* Nom + initiales */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-[Space_Grotesk,sans-serif] font-semibold ${getAvatarColor(
-                          client.nom
-                        )}`}
-                      >
-                        {getInitials(client.nom)}
-                      </div>
-                      <Link
-                        href={`/dashboard/clients/${client.id}`}
-                        className="font-medium text-[#1A1720] hover:text-[#FF3D7F] transition-colors"
-                      >
-                        {client.nom}
-                      </Link>
-                    </div>
-                  </td>
+        <div className="grid gap-4">
+          {result?.data.map((client) => (
+              <div key={client.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
 
-                  {/* Secteur */}
-                  <td className="hidden px-4 py-3 sm:table-cell">
-                    {client.secteur ? (
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          SECTOR_COLORS[client.secteur] ??
-                          "bg-[#1A1720]/5 text-[#6B6579]"
-                        }`}
-                      >
-                        {client.secteur}
-                      </span>
-                    ) : (
-                      <span className="text-[#D9D5E0]">—</span>
-                    )}
-                  </td>
+              <div className="flex items-start justify-between gap-4">
+                {/* Partie gauche */}
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 font-semibold">
+                    {getInitials(client.nom)}
+                  </div>
 
-                  {/* Ton */}
-                  <td className="hidden px-4 py-3 text-[#6B6579] capitalize md:table-cell">
-                    {client.ton ?? <span className="text-[#D9D5E0]">—</span>}
-                  </td>
+                  <div>
+                    <Link
+                      href={`/dashboard/clients/${client.id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-blue-600"
+                    >
+                      {client.nom}
+                    </Link>
 
-                  {/* Nb exemples */}
-                  <td className="hidden px-4 py-3 lg:table-cell">
-                    <span className="text-[#9C96B5] text-xs font-[IBM_Plex_Mono,monospace]">
-                      {client.exemples?.length ?? 0} exemple
-                      {(client.exemples?.length ?? 0) !== 1 ? "s" : ""}
-                    </span>
-                  </td>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {client.secteur && (
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            SECTOR_COLORS[client.secteur] ??
+                            "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {client.secteur}
+                        </span>
+                      )}
 
-                  <td className="hidden px-4 py-3 md:table-cell">
-                    {client.collaborateurs?.profiles ? (
-                      <span className="text-[#1A1720]">
-                        {client.collaborateurs.profiles.nom}{" "}
-                        {client.collaborateurs.profiles.prenom}
-                      </span>
-                    ) : (
-                      <span className="text-[#FF3D7F]">Pas encore affecté</span>
-                    )}
-                  </td>
-
-                  <td className="hidden px-4 py-3 text-[#6B6579] capitalize md:table-cell">
-                    {client.statut ?? <span className="text-[#D9D5E0]">—</span>}
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap items-center justify-end gap-1">
-                      <Link
-                        href={`/dashboard/clients/${client.id}`}
-                        className="rounded-md px-2.5 py-1 text-xs text-[#6B6579] hover:bg-[#1A1720]/5 transition-colors"
-                      >
-                        Voir
-                      </Link>
-                      {!isCollaborateur && (
-                        <>
-                          <Link
-                            href={`/dashboard/clients/${client.id}?edit=1`}
-                            className="rounded-md px-2.5 py-1 text-xs text-[#6C4CFF] hover:bg-[#6C4CFF]/10 transition-colors"
-                          >
-                            Modifier
-                          </Link>
-
-                          <button
-                            onClick={() => handleDelete(client)}
-                            disabled={deletingId === client.id}
-                            className="rounded-md px-2.5 py-1 text-xs text-[#9C96B5] hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-40"
-                          >
-                            {deletingId === client.id ? "…" : "Supprimer"}
-                          </button>
-                        </>
+                      {client.statut && (
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                          {client.statut}
+                        </span>
                       )}
                     </div>
-                  </td>
+                  </div>
+                </div>
 
-                  {/* Connexion — envoi du lien OAuth au client, jamais cliqué par l'agence */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1.5">
-                      {(["meta", "google"] as const).map((provider) => {
-                        const baseUrl =
-                          typeof window !== "undefined"
-                            ? window.location.origin
-                            : "";
-                        const oauthUrl = `${baseUrl}/api/auth/${provider}?clientId=${client.id}`;
-                        const providerLabel =
-                          provider === "meta" ? "Meta Ads" : "Google Ads";
-                        const message = `Bonjour ${client.nom}, pour connecter votre compte ${providerLabel} à notre agence, cliquez sur ce lien : ${oauthUrl}`;
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Link
+                    href={`/dashboard/clients/${client.id}`}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+                  >
+                    Voir
+                  </Link>
 
-                        const mailtoLink = client.email
-                          ? `mailto:${client.email}?subject=${encodeURIComponent(
-                              `Connexion ${providerLabel} — Lezarts Digital`
-                            )}&body=${encodeURIComponent(message)}`
-                          : null;
-                        const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
-                          message
-                        )}`;
-                        const linkId = `${client.id}-${provider}`;
+                  {!isCollaborateur && (
+                    <>
+                      <Link href={`/dashboard/clients/${client.id}?edit=1`}
+                        className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100 ">
+                        Modifier
+                      </Link>
 
-                        return (
-                          <div
-                            key={provider}
-                            className="flex items-center gap-1 rounded-md border border-[#1A1720]/10 px-2 py-1"
-                          >
-                            <span className="mr-auto text-[10px] font-[IBM_Plex_Mono,monospace] uppercase tracking-wide text-[#9C96B5]">
-                              {providerLabel}
-                            </span>
+                      <button
+                        onClick={() => handleDelete(client)}
+                        disabled={deletingId === client.id}
+                        className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100"
+                      >
+                        Supprimer
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
 
+              {/* Informations */}
+              {/* Footer */}
+              <div className="mt-5 border-t border-slate-100 pt-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  {/* Collaborateur */}
+                  <div>
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                      Collaborateur
+                    </p>
+
+                    <p className="mt-1 text-sm font-medium text-slate-700">
+                      {client.collaborateurs?.profiles
+                        ? `${client.collaborateurs.profiles.nom} ${client.collaborateurs.profiles.prenom}`
+                        : "Non affecté"}
+                    </p>
+                  </div>
+
+                  {/* Connexions */}
+                  <div className="flex flex-wrap gap-3">
+                    {(["meta", "google"] as const).map((provider) => {
+                      const baseUrl =
+                        typeof window !== "undefined"
+                          ? window.location.origin
+                          : "";
+
+                      const oauthUrl = `${baseUrl}/api/auth/${provider}?clientId=${client.id}`;
+
+                      const providerLabel =
+                        provider === "meta" ? "Meta Ads" : "Google Ads";
+
+                      const message = `Bonjour ${client.nom}, pour connecter votre compte ${providerLabel} à notre agence, cliquez sur ce lien : ${oauthUrl}`;
+
+                      const mailtoLink = client.email
+                        ? `mailto:${client.email}?subject=${encodeURIComponent(
+                            `Connexion ${providerLabel} — Lezarts Digital`
+                          )}&body=${encodeURIComponent(message)}`
+                        : null;
+
+                      const whatsappLink = `https://wa.me/?text=${encodeURIComponent(
+                        message
+                      )}`;
+
+                      const linkId = `${client.id}-${provider}`;
+
+                      return (
+                        <div
+                          key={provider}
+                          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 min-w-[220px]"
+                        >
+                          <span className="text-xs font-medium text-slate-700">
+                            {providerLabel}
+                          </span>
+
+                          <div className="ml-auto flex items-center gap-1">
                             {mailtoLink ? (
                               <a
                                 href={mailtoLink}
-                                title={`Envoyer le lien ${providerLabel} par email`}
-                                className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-[#2D6FF2]"
+                                className="rounded-md p-1.5 hover:bg-white"
                               >
-                                <Mail size={14} />
+                                <Mail size={15} />
                               </a>
                             ) : (
-                              <span
-                                title="Aucun email renseigné pour ce client"
-                                className="p-1 text-[#D9D5E0]"
-                              >
-                                <Mail size={14} />
+                              <span className="p-1.5 text-slate-300">
+                                <Mail size={15} />
                               </span>
                             )}
 
@@ -343,53 +295,51 @@ export default function ClientsPage() {
                               href={whatsappLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              title={`Envoyer le lien ${providerLabel} par WhatsApp`}
-                              className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-emerald-600"
+                              className="rounded-md p-1.5 hover:bg-white"
                             >
-                              <MessageCircle size={14} />
+                              <MessageCircle size={15} />
                             </a>
 
                             <button
                               onClick={() => handleCopyLink(oauthUrl, linkId)}
-                              title="Copier le lien"
-                              className="rounded p-1 text-[#6B6579] hover:bg-[#1A1720]/5 hover:text-[#FF3D7F]"
+                              className="rounded-md p-1.5 hover:bg-white"
                             >
                               {copiedId === linkId ? (
-                                <Check size={14} className="text-emerald-600" />
+                                <Check size={15} className="text-emerald-600" />
                               ) : (
-                                <LinkIcon size={14} />
+                                <LinkIcon size={15} />
                               )}
                             </button>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Pagination */}
       {result && result.total_pages > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <p className="text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
+          <p className="text-slate-500 font-[IBM_Plex_Mono,monospace]">
             Page {result.page} / {result.total_pages}
           </p>
           <div className="flex gap-2">
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
             >
               ← Précédent
             </button>
             <button
               disabled={page === result.total_pages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors"
             >
               Suivant →
             </button>

@@ -35,7 +35,7 @@ export default function KpiCard({
 
   return (
     <div className="relative bg-white p-6">
-      <span className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-[#FF3D7F] to-[#6C4CFF]" />
+      <span className="absolute left-0 top-0 h-full w-[3px] bg-blue-300" />
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-[#6B6579]">{label}</span>
         <Icon className="h-4 w-4 text-[#9C96B5]" />

@@ -24,11 +24,22 @@ export async function GET(req: NextRequest) {
 
   let query = (await supabase)
     .from('collaborateurs')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .select(`
+      id,
+      manager_id,
+      profiles!inner (
+        id,
+        nom,
+        prenom,
+        telephone,
+        role,
+        created_at
+      )
+    `, { count: 'exact' })
+    .order('id', { ascending: false })
     .range(from, to)
 
-  if (search) query = query.ilike('nom', `%${search}%`)
+  if (search) query = query.ilike('profiles.nom', `%${search}%`)
 
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
