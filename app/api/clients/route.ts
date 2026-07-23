@@ -66,36 +66,37 @@ export async function GET(req: NextRequest) {
 }
 
 // ─── POST /api/clients ───────────────────────────────────────
-// Crée un nouveau client — manager_id = utilisateur connecté
 export async function POST(req: NextRequest) {
-  const supabase = makeSupabase()
-
-  const { data: { user } } = await (await supabase).auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-
-  const body = await req.json()
-  const { nom, secteur, ton, mots_interdits, exemples,email ,statut} = body
-
-  if (!nom) {
-    return NextResponse.json({ error: 'Le champ nom est obligatoire' }, { status: 422 })
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
-  const { data, error } = await (await supabase)
+  const supabase = await makeSupabase();
+
+  const body = await req.json();
+  const { nom, secteur, ton, mots_interdits, exemples, email, statut } = body;
+
+  if (!nom) {
+    return NextResponse.json({ error: 'Le champ nom est obligatoire' }, { status: 422 });
+  }
+
+  const { data, error } = await supabase
     .from('clients')
     .insert([{
       nom,
-      statut:statut??null,
+      statut:         statut         ?? null,
       secteur:        secteur        ?? null,
       ton:            ton            ?? null,
       mots_interdits: mots_interdits ?? [],
       exemples:       exemples       ?? [],
-      email:email??null,
-      manager_id:     user.id,
+      email:          email          ?? null,
+      manager_id:     session.user.id,
     }])
     .select()
-    .single()
+    .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  return NextResponse.json(data, { status: 201 })
+  return NextResponse.json(data, { status: 201 });
 }
