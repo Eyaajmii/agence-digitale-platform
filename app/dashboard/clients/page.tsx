@@ -40,6 +40,8 @@ export default function ClientsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { data: session } = useSession();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const isCollaborateur =
     session?.user?.role?.toLowerCase() === "collaborateur";
 
@@ -63,14 +65,17 @@ export default function ClientsPage() {
     setSearch(searchInput);
   }
 
-  async function handleDelete(client: Client) {
-    if (!confirm(`Supprimer « ${client.nom} » ? Action irréversible.`)) return;
-    setDeletingId(client.id);
+  async function confirmDelete() {
+    if (!clientToDelete) return;
+
+    setIsDeleting(true);
+
     try {
-      await deleteClient(client.id);
+      await deleteClient(clientToDelete.id);
       await load();
+      setClientToDelete(null);
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   }
 
@@ -158,8 +163,10 @@ export default function ClientsPage() {
       ) : (
         <div className="grid gap-4">
           {result?.data.map((client) => (
-              <div key={client.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
-
+            <div
+              key={client.id}
+              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all"
+            >
               <div className="flex items-start justify-between gap-4">
                 {/* Partie gauche */}
                 <div className="flex items-center gap-4">
@@ -207,14 +214,15 @@ export default function ClientsPage() {
 
                   {!isCollaborateur && (
                     <>
-                      <Link href={`/dashboard/clients/${client.id}?edit=1`}
-                        className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100 ">
+                      <Link
+                        href={`/dashboard/clients/${client.id}?edit=1`}
+                        className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100 "
+                      >
                         Modifier
                       </Link>
 
                       <button
-                        onClick={() => handleDelete(client)}
-                        disabled={deletingId === client.id}
+                        onClick={() => setClientToDelete(client)}
                         className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100"
                       >
                         Supprimer
@@ -343,6 +351,55 @@ export default function ClientsPage() {
             >
               Suivant →
             </button>
+          </div>
+        </div>
+      )}
+      {clientToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <span className="text-xl">⚠️</span>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Supprimer le client
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">
+                Voulez-vous vraiment supprimer :
+              </p>
+
+              <p className="mt-1 font-semibold text-slate-900">
+                {clientToDelete.nom}
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setClientToDelete(null)}
+                disabled={isDeleting}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
           </div>
         </div>
       )}
