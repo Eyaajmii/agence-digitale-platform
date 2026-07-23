@@ -3,21 +3,6 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
-function Waveform() {
-  const bars = [4, 9, 6, 12, 5, 8, 3, 10, 6];
-  return (
-    <div className="flex items-end gap-[3px] h-4">
-      {bars.map((h, i) => (
-        <span
-          key={i}
-          className="w-[3px] rounded-full bg-[#FF3D7F]/50"
-          style={{ height: `${h}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function LoginContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,8 +33,9 @@ function LoginContent() {
   if (emailSent || isVerify) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0D0B14] relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#FF3D7F]/10 blur-3xl rounded-full" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#6C4CFF]/10 blur-3xl rounded-full" />
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+          ✓
+        </div>
 
         <div className="relative bg-white/[0.03] border border-white/10 rounded-2xl p-10 max-w-md w-full text-center space-y-5 backdrop-blur-xl">
           <div className="flex justify-center">
@@ -70,9 +56,7 @@ function LoginContent() {
             <br />
             Cliquez dessus pour vous connecter.
           </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#9C96B5]/60 font-[IBM_Plex_Mono,monospace]">
-            En attente du signal
-          </p>
+
           <button
             onClick={() => {
               setEmailSent(false);
@@ -89,60 +73,48 @@ function LoginContent() {
 
   // ── Page login principale ──────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-[#0D0B14]">
-      {/* ── Panneau gauche — branding ── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden border-r border-white/10">
-        <div className="absolute -top-10 -left-16 w-72 h-72 bg-[#FF3D7F]/15 blur-3xl rounded-full" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#6C4CFF]/15 blur-3xl rounded-full" />
+    <div className="min-h-screen bg-slate-50 relative">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 h-[500px] w-[500px] rounded-full bg-blue-200 blur-3xl opacity-40" />
+        <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-cyan-200 blur-3xl opacity-40" />
+      </div>
+      {/* Logo */}
+      <div className="absolute top-8 left-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-md">
+            <span className="font-bold text-sm">LD</span>
+          </div>
 
-        {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#FF3D7F] flex items-center justify-center">
-            <span className="text-[#0D0B14] font-[Space_Grotesk,sans-serif] font-bold">
-              L
-            </span>
-          </div>
-          <div>
-            <h2 className="font-[Space_Grotesk,sans-serif] font-bold text-white text-lg tracking-tight">
-              Lezarts Digital Hub
-            </h2>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
-              Digital Marketing Studio
-            </p>
-          </div>
-        </div>
+          <h2 className="font-semibold text-slate-900">Lezarts Digital</h2>
 
-        {/* Citation centrale */}
-        <div className="flex-1 flex items-center justify-center relative">
-          <div className="max-w-lg text-center space-y-6">
-            <div className="w-12 h-1 bg-[#FF3D7F] rounded-full mx-auto" />
-            <blockquote className="font-[Space_Grotesk,sans-serif] text-[#EDEBF5] text-3xl font-light leading-relaxed">
-              Gérez vos clients, contenus et campagnes depuis un seul endroit.
-            </blockquote>
-          </div>
+          <p className="text-xs text-slate-500">Marketing Platform</p>
         </div>
       </div>
-
       {/* ── Panneau droit — formulaire ── */}
-      <div className="flex flex-1 items-center justify-center p-6 relative">
-        <div className="w-full max-w-sm space-y-8">
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div
+          className="
+          w-full
+          max-w-md
+          rounded-3xl
+          border
+          border-slate-200
+          bg-white
+          p-8
+          shadow-xl
+          shadow-slate-200/50
+          "
+        >
           {/* Header */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3D7F] opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#FF3D7F]" />
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#FF3D7F] font-[IBM_Plex_Mono,monospace] font-semibold">
-                Connexion sécurisée
-              </span>
+            <div className="flex items-center gap-2"></div>
+            <div className="mb-8 text-center">
+              <h1 className="text-2xl font-bold text-slate-900">Bienvenue</h1>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Connectez-vous à votre espace.
+              </p>
             </div>
-            <h1 className="font-[Space_Grotesk,sans-serif] text-white text-2xl font-bold tracking-tight">
-              Connexion
-            </h1>
-            <p className="text-[#9C96B5] text-sm">
-              Accédez à votre espace agence
-            </p>
           </div>
 
           {/* Erreur */}
@@ -156,19 +128,32 @@ function LoginContent() {
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-150 disabled:opacity-50"
+            className="
+w-full
+h-12
+rounded-xl
+border
+border-slate-300
+bg-white
+text-slate-700
+font-medium
+hover:border-slate-400
+hover:bg-slate-50
+transition-all
+flex
+items-center
+justify-center
+gap-3
+"
           >
             <GoogleIcon />
             Continuer avec Google
           </button>
 
-          {/* Séparateur */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-[#9C96B5]/60 text-[10px] uppercase tracking-widest font-[IBM_Plex_Mono,monospace]">
-              ou par email
-            </span>
-            <div className="flex-1 h-px bg-white/10" />
+          <div className="flex items-center gap-4 py-2">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs text-slate-400">ou</span>
+            <div className="h-px flex-1 bg-slate-200" />
           </div>
 
           {/* Magic link form */}
@@ -183,14 +168,38 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vous@agence.com"
-                className="w-full bg-white/[0.03] border border-white/10 focus:border-[#FF3D7F] focus:ring-1 focus:ring-[#FF3D7F]/30 rounded-xl px-4 py-3 text-white text-sm placeholder-[#9C96B5]/40 outline-none transition-all duration-150"
+                className="
+w-full
+rounded-xl
+border
+border-slate-300
+bg-slate-50
+px-4
+py-3
+text-sm
+outline-none
+focus:border-blue-500
+focus:ring-4
+focus:ring-blue-100
+transition-all
+"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-[#FF3D7F] hover:bg-[#FF5A90] active:bg-[#E62E6C] disabled:opacity-40 disabled:cursor-not-allowed text-[#0D0B14] rounded-xl py-3 text-sm font-bold transition-all duration-150"
+              className="
+w-full
+h-12
+rounded-xl
+bg-slate-900
+text-white
+font-medium
+hover:bg-blue-800
+transition-all
+disabled:opacity-50
+"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

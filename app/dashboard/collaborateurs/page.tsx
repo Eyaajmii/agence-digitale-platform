@@ -6,7 +6,7 @@ import {
   getCollaborateurs,
   deleteCollaborateur,
 } from "@/lib/supabase/collaborateur";
-import { PaginatedCollab } from "@/types/users";
+import { Collaborateur, PaginatedCollab } from "@/types/users";
 
 function getInitials(nom: string, prenom: string) {
   return `${nom?.[0] ?? ""}${prenom?.[0] ?? ""}`.toUpperCase();
@@ -19,7 +19,8 @@ export default function CollaborateursPage() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [result, setResult] = useState<PaginatedCollab | null>(null);
-
+  const [collabToDelete, setCollabToDelete] = useState<Collaborateur | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const loadCollaborateurs = useCallback(async () => {
     setLoading(true);
     try {
@@ -40,21 +41,17 @@ export default function CollaborateursPage() {
     setPage(1);
     setSearch(searchInput);
   }
-  async function handleDelete(id: string, nom: string, prenom: string) {
-    const confirmDelete = confirm(
-      `Supprimer ${nom} ${prenom} ? Cette action est irréversible.`
-    );
+  async function confirmDelete() {
+    if (!collabToDelete) return;
 
-    if (!confirmDelete) return;
+    setIsDeleting(true);
 
     try {
-      setDeletingId(id);
-      await deleteCollaborateur(id);
+      await deleteCollaborateur(collabToDelete.id);
       await loadCollaborateurs();
-    } catch (error) {
-      console.error(error);
+      setCollabToDelete(null);
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   }
 
@@ -163,13 +160,11 @@ export default function CollaborateursPage() {
                         Modifier
                   </Link>
                   <button
-                        onClick={() =>handleDelete(collab.id,collab.profiles.nom,collab.profiles.prenom)}
-
-                        disabled={deletingId === collab.id}
+                        onClick={() => setCollabToDelete(collab)}
                         className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100"
-                  >
+                      >
                         Supprimer
-                  </button>
+                      </button>
                 </div>
               </div>
               </div>
@@ -197,6 +192,55 @@ export default function CollaborateursPage() {
             >
               Suivant →
             </button>
+          </div>
+        </div>
+      )}
+      {collabToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <span className="text-xl">⚠️</span>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Supprimer le collaborateur
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">
+                Voulez-vous vraiment supprimer :
+              </p>
+
+              <p className="mt-1 font-semibold text-slate-900">
+                {collabToDelete.profiles.nom} {collabToDelete.profiles.prenom}
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setCollabToDelete(null)}
+                disabled={isDeleting}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -275,7 +275,8 @@ export default function CollaborateurPage() {
   const [collaborateur, setCollab] = useState<Collaborateur | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(searchParams.get("edit") === "1");
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
     async function load() {
       try {
@@ -290,14 +291,16 @@ export default function CollaborateurPage() {
 
   async function handleDelete() {
     if (!collaborateur) return;
-    if (
-      !confirm(
-        `Supprimer « ${collaborateur.profiles.nom} ${collaborateur.profiles.prenom} » ? Action irréversible.`
-      )
-    )
-      return;
-    await deleteCollaborateur(collaborateur.id);
-    router.push("/dashboard/collaborateurs");
+
+    setIsDeleting(true);
+
+    try {
+      await deleteCollaborateur(collaborateur.profiles.id);
+      router.push("/dashboard/collaborateurs");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
   }
 
   // ── Loading ──
@@ -364,8 +367,55 @@ export default function CollaborateurPage() {
         <CollaborateurView
           collaborateur={collaborateur}
           onEdit={() => setEditMode(true)}
-          onDelete={handleDelete}
+          onDelete={() => setShowDeleteModal(true)}
         />
+      )}
+      {showDeleteModal && collaborateur && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Supprimer le collaborateur
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">
+                Voulez-vous vraiment supprimer :
+              </p>
+
+              <p className="mt-2 font-semibold text-slate-900">{collaborateur.profiles.nom} {collaborateur.profiles.prenom}</p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
