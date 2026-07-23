@@ -48,11 +48,16 @@ export async function PATCH(
   const supabase = makeSupabase()
   const body = await req.json()
 
-  const allowed = ['nom', 'secteur', 'ton', 'mots_interdits', 'exemples', 'email','statut','collaborateur_id']
+  const allowed = ['nom', 'secteur', 'ton', 'mots_interdits', 'exemples', 'email', 'statut', 'collaborateur_id']
   const updates: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]
   }
+
+  if (updates.collaborateur_id === '' || updates.collaborateur_id === undefined) {
+    delete updates.collaborateur_id
+  }
+
   if ('mots_interdits' in updates) {
     const raw = updates.mots_interdits
     updates.mots_interdits = typeof raw === 'string'
