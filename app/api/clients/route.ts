@@ -73,7 +73,6 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = await makeSupabase();
-
   const body = await req.json();
   const { nom, secteur, ton, mots_interdits, exemples, email, statut } = body;
 
@@ -81,16 +80,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Le champ nom est obligatoire' }, { status: 422 });
   }
 
+  // Convertit "mot1, mot2" -> ["mot1", "mot2"], et "" -> []
+  const toArray = (val: unknown): string[] => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') {
+      return val.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
   const { data, error } = await supabase
     .from('clients')
     .insert([{
       nom,
-      statut:         statut         ?? null,
-      secteur:        secteur        ?? null,
-      ton:            ton            ?? null,
-      mots_interdits: mots_interdits ?? [],
-      exemples:       exemples       ?? [],
-      email:          email          ?? null,
+      statut:         statut  ?? null,
+      secteur:        secteur ?? null,
+      ton:            ton     ?? null,
+      mots_interdits: toArray(mots_interdits),
+      exemples:       toArray(exemples),
+      email:          email   ?? null,
       manager_id:     session.user.id,
     }])
     .select()

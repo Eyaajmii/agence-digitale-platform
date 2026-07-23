@@ -516,8 +516,8 @@ function ClientEditForm({
               <div className="space-y-3">
                 {form.exemples.map((ex, i) => (
                   <div
-                  key={i}
-                  className="
+                    key={i}
+                    className="
                   rounded-2xl
                   border
                   border-slate-200
@@ -525,7 +525,7 @@ function ClientEditForm({
                   p-5
                   shadow-sm
                   "
-                >
+                  >
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <select
                         value={ex.platforme}
@@ -630,6 +630,8 @@ export default function ClientPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(isEdit);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { data: session } = useSession();
   const isCollaborateur =
     session?.user?.role?.toLowerCase() === "collaborateur";
@@ -648,9 +650,16 @@ export default function ClientPage() {
 
   async function handleDelete() {
     if (!client) return;
-    if (!confirm(`Supprimer « ${client.nom} » ? Action irréversible.`)) return;
-    await deleteClient(client.id);
-    router.push("/dashboard/clients");
+
+    setIsDeleting(true);
+
+    try {
+      await deleteClient(client.id);
+      router.push("/dashboard/clients");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
   }
 
   if (loading) {
@@ -710,9 +719,56 @@ export default function ClientPage() {
         <ClientView
           client={client}
           onEdit={() => setEditMode(true)}
-          onDelete={handleDelete}
+          onDelete={() => setShowDeleteModal(true)}
           isCollaborateur={isCollaborateur}
         />
+      )}
+      {showDeleteModal && client && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Supprimer le client
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">
+                Voulez-vous vraiment supprimer :
+              </p>
+
+              <p className="mt-2 font-semibold text-slate-900">{client.nom}</p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
