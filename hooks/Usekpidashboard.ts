@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 import {
   ClientOption,
   Seuils,
@@ -11,6 +10,8 @@ import {
   MetaDailyRow,
 } from "@/types/kpiss"
 import { GA4KpiData } from "@/types/kpi";
+import { getClients } from "@/lib/supabase/client";
+import { useSession } from "next-auth/react";
 
 const DEFAULT_SEUILS: Seuils = {
   roasMin: 3.0,
@@ -20,6 +21,8 @@ const DEFAULT_SEUILS: Seuils = {
 };
 
 export function useKpiDashboard() {
+  const { data: session } = useSession();
+
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [selectedClient, setSelectedClient] = useState<string>("");
   const [periode, setPeriode] = useState<string>("30");
@@ -37,28 +40,15 @@ export function useKpiDashboard() {
 
   // 1. Charger les clients + l'utilisateur connecté
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user?.email) {
-        setUserEmail(data.user.email);
-      }
-    });
-
-    supabase
-      .from("clients")
-      .select("id, nom")
-      .order("nom")
+    getClients(1, 100) 
       .then(({ data }) => {
         if (data && data.length > 0) {
           setClients(data);
           setSelectedClient(data[0].id);
           setClientName(data[0].nom);
         }
-      });
+      })
+      .catch((err) => console.error("Erreur chargement clients:", err));
   }, []);
 
   // 2. Analyse IA
@@ -155,7 +145,7 @@ export function useKpiDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientId: selectedClient,
-          userEmail,
+          userEmail: session?.user?.email ?? "",
           clientName,
         }),
       });

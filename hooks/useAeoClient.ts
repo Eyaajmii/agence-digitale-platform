@@ -1,7 +1,7 @@
 "use client";
 
+import { getClients } from "@/lib/supabase/client";
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 
 export type ClientOption = { id: string; nom: string };
 
@@ -11,22 +11,16 @@ export function useAeoClient() {
   const [loadingClients, setLoadingClients] = useState<boolean>(true);
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    supabase
-      .from("clients")
-      .select("id, nom")
-      .order("nom")
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+    getClients(1, 100) 
+      .then(({ data }) => {
+        if (data && data.length > 0) {
           setClients(data);
-          setSelectedClient(data[0].id); // client par défaut = le premier
+          setSelectedClient(data[0].id);
         }
         setLoadingClients(false);
-      });
+
+      })
+      .catch((err) => console.error("Erreur chargement clients:", err));
   }, []);
 
   const handleClientChange = (id: string) => {
