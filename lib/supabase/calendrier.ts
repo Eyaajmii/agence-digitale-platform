@@ -1,38 +1,9 @@
-import { createBrowserClient } from '@supabase/ssr'
-import type { CalendrierEvent } from '@/types/calendrier'
-
-function db() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+import type { CalendrierEvent } from "@/types/calendrier";
 
 export async function getCalendrierEvents(): Promise<CalendrierEvent[]> {
-  const supabase = db()
-  const { data, error } = await supabase
-    .from('calendrier')
-    .select(`
-      id,
-      client_id,
-      content_id,
-      date,
-      statut,
-      created_at,
-      contenus (
-        texte,
-        plateforme,
-        statut,
-        objective
-      ),
-      clients (
-        nom
-      )
-    `)
-    .order('date', { ascending: true })
-
-  if (error) throw new Error(error.message)
-  return (data ?? []) as unknown as CalendrierEvent[]
+  const res = await fetch("/api/calendrier");
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
+  return res.json();
 }
 
 export async function addCalendrierEvent(
@@ -40,90 +11,43 @@ export async function addCalendrierEvent(
   client_id: string,
   date: string
 ): Promise<CalendrierEvent> {
-  const supabase = db()
-  const { data, error } = await supabase
-    .from('calendrier')
-    .insert([{
-      content_id: content_id,
-      client_id: client_id,
-      date,
-      statut: 'planifié',
-    }])
-    .select(`
-      id,
-      client_id,
-      content_id,
-      date,
-      statut,
-      created_at,
-      contenus (
-        texte,
-        plateforme,
-        statut
-      ),
-      clients (
-        nom
-      )
-    `)
-    .single()
-
-  if (error) throw new Error(error.message)
-  return data as unknown as CalendrierEvent
+  const res = await fetch("/api/calendrier", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content_id, client_id, date }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
+  return res.json();
 }
 
-export async function updateEventDate(
-  id: string,
-  date: string
-): Promise<void> {
-  const supabase = db()
-  const { error } = await supabase
-    .from('calendrier')
-    .update({ date })
-    .eq('id', id)
-
-  if (error) throw new Error(error.message)
+export async function updateEventDate(id: string, date: string): Promise<void> {
+  const res = await fetch(`/api/calendrier/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
 }
 
 export async function updateEventStatut(
   id: string,
-  statut: CalendrierEvent['statut']
+  statut: CalendrierEvent["statut"]
 ): Promise<void> {
-  const supabase = db()
-  const { error } = await supabase
-    .from('calendrier')
-    .update({ statut })
-    .eq('id', id)
-
-  if (error) throw new Error(error.message)
+  const res = await fetch(`/api/calendrier/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ statut }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
 }
 
 export async function deleteCalendrierEvent(id: string): Promise<void> {
-  const supabase = db()
-  const { error } = await supabase
-    .from('calendrier')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw new Error(error.message)
+  const res = await fetch(`/api/calendrier/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
 }
 
 export async function getContenusValides() {
-  const supabase = db()
-  const { data, error } = await supabase
-    .from('contenus')
-    .select(`
-      id,
-      texte,
-      plateforme,
-      statut,
-      client_id,
-      clients (
-        nom
-      )
-    `)
-    .eq('statut', 'Approuvé')
-    .order('created_at', { ascending: false })
-
-  if (error) throw new Error(error.message)
-  return data ?? []
+  const res = await fetch("/api/calendrier/contenus-valides");
+  if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
+  return res.json();
 }
