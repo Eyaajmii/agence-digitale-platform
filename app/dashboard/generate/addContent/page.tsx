@@ -5,6 +5,7 @@ import { useGenerate } from "@/hooks/usegenerate";
 import { createBrowserClient } from "@supabase/ssr";
 import { addCalendrierEvent } from "@/lib/supabase/calendrier";
 import Link from "next/link";
+import { getClients } from "@/lib/supabase/client";
 
 import {
   Sparkles,
@@ -40,7 +41,7 @@ interface Client {
 }
 
 export default function GeneratePage() {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [clientId, setClientId] = useState("");
   const [platform, setPlatform] = useState("Instagram");
   const [objective, setObjective] = useState("");
@@ -60,17 +61,9 @@ export default function GeneratePage() {
   } = useGenerate();
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    supabase
-      .from("clients")
-      .select("id, nom, secteur")
-      .order("nom")
-      .then(({ data }) => {
-        if (data) setClients(data);
-      });
+    getClients(1, 100).then((res) => {
+      setClients(res.data || []);
+    });
   }, []);
 
   const handleSubmit = () => {
