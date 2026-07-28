@@ -2,6 +2,7 @@ import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 //import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
+import { auth } from "@/auth";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
 /*const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -38,6 +39,10 @@ const PLATFORM_CONSTRAINTS: Record<
 };
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   // ── 1. Parse & validate body ──────────────────────────────
   let body: { clientId: string; platform: string; objective: string };
   try {
@@ -67,14 +72,20 @@ export async function POST(req: NextRequest) {
   // ── 2. Fetch client profile ────────────────────────────────
   const { data: client, error: clientError } = await supabase
     .from("clients")
-    .select("nom, secteur, ton, mots_interdits, exemples")
+    .select("nom, secteur, ton, mots_interdits, exemples,collaborateur_id,manager_id")
     .eq("id", clientId)
     .single();
 
   if (clientError || !client) {
     return new Response("Client not found", { status: 404 });
   }
-
+  const role = session.user.role?.toLowerCase();
+  if (role === "collaborateur" && client.collaborateur_id !== session.user.id) {
+    return NextResponse.json(
+      { error: "Vous n'êtes pas autorisé à générer du contenu pour ce client" },
+      { status: 403 }
+    );
+  }
   // ── 3. Fetch few-shot examples ─────────────────────────────
   const { data: validatedContents } = await supabase
     .from("contenus")
@@ -242,6 +253,10 @@ Rappel : respecte strictement le profil client, les contraintes de la plateforme
   });
 }
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(req.url);
 
@@ -251,21 +266,25 @@ export async function GET(req: NextRequest) {
 
     const from = (page - 1) * limit;
     const to = from + limit - 1;
-
+    const role = session.user.role?.toLowerCase();
     let query = supabase
       .from("contenus")
       .select(
         `
         *,
-        clients (
+        clients!inner (
           id,
-          nom
+          nom,
+          collaborateur_id,
+          manager_id
         )
       `,
         { count: "exact" }
       )
       .order("created_at", { ascending: false });
-
+      if (role === "collaborateur") {
+        query = query.eq("clients.collaborateur_id", session.user.id);
+      }
     if (clientId) {
       query = query.eq("client_id", clientId);
     }

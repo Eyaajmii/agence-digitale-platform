@@ -15,13 +15,24 @@ function LoginContent() {
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await signIn("resend", {
-      email,
-      redirect: false,
-      callbackUrl: "/dashboard",
-    });
-    setEmailSent(true);
-    setLoading(false);
+    try {
+      const res = await signIn("resend", {
+        email,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+  
+      if (res?.error) {
+        console.error("SignIn error:", res.error);
+        // affiche un message d'erreur à l'utilisateur ici
+      } else {
+        setEmailSent(true);
+      }
+    } catch (err) {
+      console.error("SignIn threw:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleGoogle() {
