@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { cookies } from 'next/headers'
 import { auth } from '@/auth'
 
-async function makeSupabase() {
-  const cookieStore =await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  )
-}
+
 export async function GET() {
 const session = await auth();
   if (!session?.user) {
@@ -18,8 +11,7 @@ const session = await auth();
   }
 
   const role = session.user.role?.toLowerCase();
-  const supabase = makeSupabase()
-  let query = (await supabase)
+  let query =supabase
     .from("calendrier")
     .select(
       `
@@ -55,7 +47,6 @@ const session = await auth();
   return NextResponse.json(data ?? []);
 }
 export async function POST(req: NextRequest) {
-    const supabase = makeSupabase()
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -79,7 +70,7 @@ export async function POST(req: NextRequest) {
     const role = session.user.role?.toLowerCase();
   
     if (role === "collaborateur") {
-      const { data: client, error: clientError } = await (await supabase)
+      const { data: client, error: clientError } = await supabase
         .from("clients")
         .select("id, collaborateur_id")
         .eq("id", client_id)
@@ -96,7 +87,7 @@ export async function POST(req: NextRequest) {
       }
     }
   
-    const { data, error } = await (await supabase)
+    const { data, error } =await supabase
       .from("calendrier")
       .insert([
         {

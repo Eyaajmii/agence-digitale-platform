@@ -1,14 +1,10 @@
 //Monitoring Perplexity
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import type { MoteurIA, StatutCitation } from "@/types/aeo";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 interface MonitorRequestBody {
   clientId: string;
   domaineCible: string;
@@ -109,7 +105,7 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        const { data: previous } = await supabaseAdmin
+        const { data: previous } = await supabase
           .from("aeo_monitoring")
           .select("statut, position")
           .eq("client_id", body.clientId)
@@ -127,7 +123,7 @@ export async function POST(req: NextRequest) {
           check
         );
 
-        const { data: inserted, error } = await supabaseAdmin
+        const { data: inserted, error } = await supabase
           .from("aeo_monitoring")
           .insert({
             client_id: body.clientId,
@@ -166,7 +162,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "clientId requis." }, { status: 400 });
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("aeo_monitoring")
     .select("*")
     .eq("client_id", clientId)

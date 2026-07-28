@@ -1,7 +1,7 @@
 //crawler cheerio
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import type { AeoDetailsScore, AeoRecommendation } from "@/types/aeo";
 import { callClaudeJSON } from "@/lib/claude/prompts";
 
@@ -29,10 +29,7 @@ interface ClaudeScoringResponse {
   details_score: AeoDetailsScore;
   recommandations: AeoRecommendation[];
 }
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+
 /**
  * Extraction "cheerio" du contenu de la page : structure Hn, paragraphes,
  * présence d'un schema.org FAQPage, densité de liens, échantillon de texte
@@ -179,7 +176,7 @@ export async function POST(req: NextRequest) {
     const extracted = extractContent(html, parsedUrl.toString());
     const scoring = await scoreWithClaude(parsedUrl.toString(), extracted);
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("audit_aeo")
       .insert({
         client_id: body.clientId,
@@ -213,7 +210,7 @@ export async function GET(req: NextRequest) {
   if (!clientId) {
     return NextResponse.json({ error: "clientId requis." }, { status: 400 });
   }
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("audit_aeo")
     .select("*")
     .eq("client_id", clientId)

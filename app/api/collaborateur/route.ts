@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-
-async function makeSupabase() {
-  const cookieStore =await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  )
-}
-
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
-  const supabase = makeSupabase()
   const { searchParams } = new URL(req.url)
 
   const page    = parseInt(searchParams.get('page')     ?? '1')
@@ -22,7 +10,7 @@ export async function GET(req: NextRequest) {
   const from    = (page - 1) * perPage
   const to      = from + perPage - 1
 
-  let query = (await supabase)
+  let query =  supabase
     .from('collaborateurs')
     .select(`
       id,
@@ -55,9 +43,7 @@ export async function GET(req: NextRequest) {
 
 
 export async function POST(req: NextRequest) {
-  const supabase = makeSupabase()
-
-  const { data: { user } } = await (await supabase).auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const body = await req.json()
@@ -67,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Le champ nom est obligatoire' }, { status: 422 })
   }
 
-  const { data, error } = await (await supabase)
+  const { data, error } =await supabase
     .from('collaborateurs')
     .insert([{
       nom,

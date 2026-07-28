@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { streamClaude } from "@/lib/claude/prompts";
 import type { GenerateAeoContentInput } from "@/types/aeo";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+
 function buildSystemPrompt(client: {
   nom: string;
   secteur: string;
@@ -39,7 +36,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data: client, error } = await supabaseAdmin
+  const { data: client, error } = await supabase
     .from("clients")
     .select("nom, secteur, ton, mots_interdits")
     .eq("id", body.clientId)

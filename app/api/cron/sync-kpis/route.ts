@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 
-// إنشاء Supabase Client بالسيرفر رول لتجاوز الـ RLS وتحديث البيانات
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+
 
 export async function GET(request: NextRequest) {
   // 1. الأمان: نتثبتوا إنو اللي طالب الـ Route هو Vercel بركة مش حد خارجي
@@ -16,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 2. نجيبو قائمة الـ IDs متاع الحرفاء الكل من جدول clients
-    const { data: clients, error: clientError } = await supabaseAdmin
+    const { data: clients, error: clientError } = await supabase
       .from('clients')
       .select('id');
 

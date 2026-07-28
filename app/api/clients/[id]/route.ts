@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { auth } from '@/auth' // adapte le chemin, c'est ton export NextAuth v5
 
-function makeSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
+
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = makeSupabase()
-
   const { data, error } = await supabase
     .from('clients')
     .select(`
@@ -45,7 +38,6 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const supabase = makeSupabase()
   const body = await req.json()
 
   const allowed = ['nom', 'secteur', 'ton', 'mots_interdits', 'exemples', 'email', 'statut', 'collaborateur_id']
@@ -90,7 +82,6 @@ export async function DELETE(
   }
 
   const { id } = await params
-  const supabase = makeSupabase()
 
   const { error } = await supabase
     .from('clients')

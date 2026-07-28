@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
-
-async function makeSupabase() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  );
-}
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = makeSupabase();
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,7 +30,7 @@ export async function PATCH(
     );
   }
 
-  const { error } = await (await supabase)
+  const { error } =await supabase
     .from("calendrier")
     .update(updates)
     .eq("id", id);
@@ -56,7 +46,6 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = makeSupabase();
 
   const session = await auth();
   if (!session?.user) {
@@ -65,7 +54,7 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const { error } = await (await supabase).from("calendrier").delete().eq("id", id);
+  const { error } =await supabase.from("calendrier").delete().eq("id", id);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

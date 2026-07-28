@@ -1,14 +1,10 @@
 //Analyse IA des KPIs
 // /app/api/analyze-campaigns/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 import Groq from 'groq-sdk';
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 //const anthropic = new Anthropic({
   //apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -27,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. تجميع البيانات (Agrégation) من جدول kpi_snapshots للحريف هذا
-    const { data: snapshots, error: dbError } = await supabaseAdmin
+    const { data: snapshots, error: dbError } = await supabase
       .from('kpi_snapshots')
       .select('source, data')
       .eq('client_id', clientId);
@@ -113,7 +109,7 @@ export async function POST(request: NextRequest) {
         const title = `Alerte Rouge : Anomalie Critique Détectée`;
         
         // A. Notification In-App via Supabase (Déclenche Realtime automatiquement)
-        await supabaseAdmin.from('notifications').insert({
+        await supabase.from('notifications').insert({
           user_id: userId,
           title: title,
           message: anomaly.description,
@@ -136,7 +132,7 @@ export async function POST(request: NextRequest) {
         const title = `Campagne à risque — ${campaign.nom}`;
         const msg = `${campaign.raison}\nMétrique critique : ${campaign.metrique_critique}`;
 
-        await supabaseAdmin.from('notifications').insert({
+        await supabase.from('notifications').insert({
           user_id: userId,
           title: title,
           message: msg,

@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import puppeteer from 'puppeteer';
 import { Resend } from 'resend';
 import { auth } from '@/auth';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 const resend = new Resend(process.env.AUTH_RESEND_KEY!);
 
 const STORAGE_BUCKET = 'reports';
@@ -31,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Récupération du client (nom + email officiel, pas celui envoyé par le front)
-    const { data: client, error: clientError } = await supabaseAdmin
+    const { data: client, error: clientError } = await supabase
       .from('clients')
       .select('id, nom, email, manager_id, collaborateur_id')
       .eq('id', clientId)
@@ -48,7 +42,7 @@ export async function POST(request: NextRequest) {
     const clientName = client.nom;
 
     // 2. Récupération des dernières analyses IA et KPI pour construire le rapport
-    const { data: snapshots, error: dbError } = await supabaseAdmin
+    const { data: snapshots, error: dbError } = await supabase
       .from('kpi_snapshots')
       .select('id, source, data')
       .eq('client_id', clientId);
@@ -222,7 +216,7 @@ export async function POST(request: NextRequest) {
     const fileName = `Rapport_${safeClientName}_${Date.now()}.pdf`;
     const storagePath = `${clientId}/${fileName}`;
 
-    const { error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(storagePath, pdfBuffer, {
         contentType: 'application/pdf',
@@ -235,7 +229,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Si le bucket est public : URL publique directe
-    const { data: publicUrlData } = supabaseAdmin.storage
+    const { data: publicUrlData } = supabase.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(storagePath);
 
@@ -245,7 +239,7 @@ export async function POST(request: NextRequest) {
     const periode = new Date();
     periode.setDate(1); // premier jour du mois en cours
 
-    const { error: insertError } = await supabaseAdmin
+    const { error: insertError } = await supabase
       .from('rapports')
       .insert({
         kpi_id: snapshots[0].id,

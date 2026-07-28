@@ -1,12 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } } 
-);
+
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -19,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email requis" }, { status: 400 });
   }
 
-  const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+  const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${process.env.NEXTAUTH_URL}/auth/set-password`,
   });
 

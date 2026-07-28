@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 
-// إنشاء Supabase Client بالسيرفر رول لتفادي مشاكل الـ RLS في الـ Backend
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -19,7 +14,7 @@ export async function GET(request: NextRequest) {
     // 1. التثبت من الـ Cache (أقل من 6 ساعات)
     //TTL
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-    const { data: cache } = await supabaseAdmin
+    const { data: cache } = await supabase
       .from('kpi_snapshots')
       .select('data')
       .eq('client_id', clientId)
@@ -32,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. جلب الـ Tokens والـ Ad Account ID من الـ DB
-    const { data: tokenData, error: tokenError } = await supabaseAdmin
+    const { data: tokenData, error: tokenError } = await supabase
       .from('oauth_tokens')
       .select('access_token, account_id')
       .eq('client_id', clientId)
@@ -55,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. تحديث الـ Cache في Supabase (Upsert)
-    await supabaseAdmin.from('kpi_snapshots').upsert({
+    await supabase.from('kpi_snapshots').upsert({
       client_id: clientId,
       source: 'meta',
       data: result.data || result,

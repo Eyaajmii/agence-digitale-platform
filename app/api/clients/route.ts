@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { cookies } from 'next/headers'
 import { auth } from "@/auth";
-
-async function makeSupabase() {
-  const cookieStore =await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  )
-}
 
 // ─── GET /api/clients ────────────────────────────────────────
 // Retourne la liste paginée des clients du manager connecté
@@ -22,7 +13,6 @@ export async function GET(req: NextRequest) {
       { status: 401 }
     );
   }
-  const supabase = makeSupabase()
   const { searchParams } = new URL(req.url)
 
   const page    = parseInt(searchParams.get('page')     ?? '1')
@@ -31,7 +21,7 @@ export async function GET(req: NextRequest) {
   const from    = (page - 1) * perPage
   const to      = from + perPage - 1
 
-  let query = (await supabase)
+  let query =supabase
     .from('clients')
     .select(
       `
@@ -72,7 +62,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
-  const supabase = await makeSupabase();
   const body = await req.json();
   const { nom, secteur, ton, mots_interdits, exemples, email, statut } = body;
 
