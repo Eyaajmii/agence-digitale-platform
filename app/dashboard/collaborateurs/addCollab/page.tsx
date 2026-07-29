@@ -51,10 +51,10 @@ export default function AddCollaborateurPage() {
           href="/dashboard/collaborateurs"
           className="text-sm text-slate-500 hover:text-slate-900"
         >
-          ← Collaborateurs
+          ← Liste des collaborateurs
         </Link>
 
-        <span className="text-[#D9D5E0]">/</span>
+        {/*<span className="text-[#D9D5E0]">/</span>*/}
 
         <h1 className="mt-2 text-3xl font-bold text-slate-900">
           Nouveau collaborateur

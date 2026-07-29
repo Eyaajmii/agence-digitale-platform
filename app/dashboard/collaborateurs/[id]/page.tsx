@@ -335,11 +335,10 @@ export default function CollaborateurPage() {
           href="/dashboard/collaborateurs"
           className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
         >
-          <ChevronLeft size={15} />
-          Collaborateurs
+          ← Liste des collaborateurs
         </Link>
 
-        <span className="text-[#1A1720]/15">/</span>
+        {/*<span className="text-[#1A1720]/15">/</span>
 
         <span className="text-sm font-medium text-[#1A1720]">
           {collaborateur.profiles.nom} {collaborateur.profiles.prenom}
@@ -350,7 +349,7 @@ export default function CollaborateurPage() {
             <span className="text-[#1A1720]/15">/</span>
             <span className="text-sm text-[#9C96B5]">Modifier</span>
           </>
-        )}
+        )}*/}
       </div>
 
       {/* Contenu */}

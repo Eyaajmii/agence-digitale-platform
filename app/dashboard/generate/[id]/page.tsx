@@ -101,13 +101,13 @@ export default function ContentDetailPage() {
           href="/dashboard/generate"
           className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
         >
-          <ChevronLeft size={15} />
-          Contenu
+          
+          ← Liste des contenus
         </Link>
-        <span className="text-[#1A1720]/15">/</span>
+        {/*  <span className="text-[#1A1720]/15">/</span>
         <span className="text-sm text-[#1A1720] font-medium">
           {content.clients?.nom}
-        </span>
+        </span>*/}
       </div>
       {/* Header */}
       <div className="rounded-2xl border border-[#1A1720]/10 bg-white p-6">

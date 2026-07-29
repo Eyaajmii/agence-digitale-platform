@@ -161,7 +161,7 @@ transition-all
           href="/dashboard/generate"
           className="text-sm text-slate-500 hover:text-slate-900"
         >
-          ← Retour
+          ← Liste des conetnus
         </Link>
 
         <h1 className="mt-2 text-3xl font-bold text-slate-900">

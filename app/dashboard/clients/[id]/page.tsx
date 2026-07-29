@@ -692,17 +692,16 @@ export default function ClientPage() {
           href="/dashboard/clients"
           className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"
         >
-          <ChevronLeft size={15} />
-          Clients
+          ← Liste des clients
         </Link>
-        <span className="text-[#1A1720]/15">/</span>
+        {/*<span className="text-[#1A1720]/15">/</span>
         <span className="text-sm text-[#1A1720] font-medium">{client.nom}</span>
         {editMode && (
           <>
             <span className="text-[#1A1720]/15">/</span>
             <span className="text-sm text-[#9C96B5]">Modifier</span>
           </>
-        )}
+        )}*/}
       </div>
 
       {/* Contenu */}
