@@ -328,9 +328,9 @@ export default function CollaborateurPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="space-y-6 font-[Inter,sans-serif]">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2">
+      <div className="mb-6">
         <Link
           href="/dashboard/collaborateurs"
           className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"

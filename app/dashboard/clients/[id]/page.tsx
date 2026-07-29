@@ -685,9 +685,9 @@ export default function ClientPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 font-[Inter,sans-serif]">
+    <div className="space-y-6 font-[Inter,sans-serif]">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2">
+      <div className="mb-6">
         <Link
           href="/dashboard/clients"
           className="flex items-center gap-1 text-sm text-[#9C96B5] hover:text-[#1A1720] transition-colors"

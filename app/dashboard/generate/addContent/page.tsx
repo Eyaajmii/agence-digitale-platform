@@ -154,7 +154,7 @@ focus:ring-blue-100
 transition-all
 `;
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6 font-[Inter,sans-serif]">
+    <div className="space-y-6 font-[Inter,sans-serif]">
       {/* En-tête */}
       <div className="mb-6">
         <Link
