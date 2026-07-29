@@ -26,7 +26,7 @@ const nav = [
   { href: "/dashboard/collaborateurs", label: "Collaborateurs", icon: Users },
   { href: "/dashboard/generate", label: "Contenu", icon: PenSquare },
   {
-    href: "/dashboard/generate/calendrier",
+    href: "/dashboard/calendrier",
     label: "Calendrier",
     icon: CalendarDays,
   },
