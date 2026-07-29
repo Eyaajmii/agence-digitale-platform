@@ -12,7 +12,7 @@ export async function GET() {
     );
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data: profile, error } = await supabaseAdmin
     .from("profiles")
     .select("*")
     .eq("id", session.user.id)
@@ -25,7 +25,22 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json(data);
+  let manager = null;
+
+  if (profile.role === "manager") {
+    const { data } = await supabaseAdmin
+      .from("managers")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    manager = data;
+  }
+
+  return NextResponse.json({
+    profile,
+    manager,
+  });
 }
 
 export async function PUT(req: NextRequest) {
@@ -38,24 +53,31 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
-
   const {
     nom,
     prenom,
     telephone,
-  }: {
-    nom: string;
-    prenom: string;
-    telephone: string;
-  } = body;
+    poste,
+    bio,
+    ville,
+    pays,
+    role,
+    nom_agence,
+    adresse_agence,
+    email_agence,
+    fax_agence,
+  } = await req.json();
 
-  const { data, error } = await supabaseAdmin
+  const { data: profile, error } = await supabaseAdmin
     .from("profiles")
     .update({
       nom,
       prenom,
       telephone,
+      poste,
+      ville,
+      pays,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", session.user.id)
     .select()
@@ -68,5 +90,34 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  return NextResponse.json(data);
+  let manager = null;
+
+  if (role === "manager") {
+    const { data: managerData, error: managerError } =
+      await supabaseAdmin
+        .from("managers")
+        .update({
+          nom_agence,
+          adresse_agence,
+          email_agence,
+          fax_agence,
+        })
+        .eq("id", session.user.id)
+        .select()
+        .single();
+
+    if (managerError) {
+      return NextResponse.json(
+        { error: managerError.message },
+        { status: 500 }
+      );
+    }
+
+    manager = managerData;
+  }
+
+  return NextResponse.json({
+    profile,
+    manager,
+  });
 }

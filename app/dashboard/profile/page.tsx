@@ -10,10 +10,14 @@ type Profile = {
   prenom: string;
   telephone: string;
   role: string;
+  poste: string;
+  ville: string;
+  pays: string;
 };
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [manager, setManager] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -22,7 +26,9 @@ export default function ProfilePage() {
     async function loadProfile() {
       try {
         const data = await getProfile();
-        setProfile(data);
+
+        setProfile(data.profile);
+        setManager(data.manager);
       } finally {
         setLoading(false);
       }
@@ -40,13 +46,20 @@ export default function ProfilePage() {
     setSuccess(false);
 
     try {
-      const updated = await updateProfile({
+      await updateProfile({
         nom: profile.nom,
         prenom: profile.prenom,
         telephone: profile.telephone,
+        poste: profile.poste,
+        ville: profile.ville,
+        pays: profile.pays,
+
+        nom_agence: manager?.nom_agence,
+        adresse_agence: manager?.adresse_agence,
+        email_agence: manager?.email_agence,
+        fax_agence: manager?.fax_agence,
       });
 
-      setProfile(updated);
       setSuccess(true);
     } finally {
       setSaving(false);
@@ -168,6 +181,59 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Poste
+              </label>
+
+              <input
+                type="text"
+                value={profile.poste ?? ""}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    poste: e.target.value,
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Ville
+              </label>
+
+              <input
+                type="text"
+                value={profile.ville ?? ""}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    ville: e.target.value,
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Pays
+              </label>
+
+              <input
+                type="text"
+                value={profile.pays ?? ""}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    pays: e.target.value,
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
 
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -181,7 +247,87 @@ export default function ProfilePage() {
               />
             </div>
           </div>
+          {profile.role === "manager" && manager && (
+            <div className="border-t border-slate-200 p-8">
+              <h3 className="mb-6 text-lg font-semibold text-slate-900">
+                Informations de l'agence
+              </h3>
 
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Nom de l'agence
+                  </label>
+
+                  <input
+                    type="text"
+                    value={manager.nom_agence ?? ""}
+                    onChange={(e) =>
+                      setManager({
+                        ...manager,
+                        nom_agence: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Email agence
+                  </label>
+
+                  <input
+                    type="email"
+                    value={manager.email_agence ?? ""}
+                    onChange={(e) =>
+                      setManager({
+                        ...manager,
+                        email_agence: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Adresse agence
+                  </label>
+
+                  <input
+                    type="text"
+                    value={manager.adresse_agence ?? ""}
+                    onChange={(e) =>
+                      setManager({
+                        ...manager,
+                        adresse_agence: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Fax
+                  </label>
+
+                  <input
+                    type="text"
+                    value={manager.fax_agence ?? ""}
+                    onChange={(e) =>
+                      setManager({
+                        ...manager,
+                        fax_agence: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           {/* Footer */}
           <div className="flex justify-end border-t border-slate-200 bg-slate-50 px-8 py-5">
             <button
@@ -191,9 +337,7 @@ export default function ProfilePage() {
             >
               <Save size={16} />
 
-              {saving
-                ? "Enregistrement..."
-                : "Enregistrer les modifications"}
+              {saving ? "Enregistrement..." : "Enregistrer les modifications"}
             </button>
           </div>
         </div>

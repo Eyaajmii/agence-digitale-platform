@@ -256,23 +256,6 @@ export default function DashboardLayout({
                     Mon profil
                   </Link>
 
-                  <Link
-                    href="/dashboard/settings"
-                    className="
-            flex
-            items-center
-            gap-3
-            rounded-xl
-            px-3
-            py-2.5
-            text-sm
-            text-slate-700
-            hover:bg-slate-50
-          "
-                  >
-                    Paramètres
-                  </Link>
-
                   <button
                     onClick={() => signOut({ callbackUrl: "/auth/login" })}
                     className="
