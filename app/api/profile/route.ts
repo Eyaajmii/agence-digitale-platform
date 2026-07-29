@@ -27,7 +27,7 @@ export async function GET() {
 
   let manager = null;
 
-  if (profile.role === "manager") {
+  if (profile.role === "Manager") {
     const { data } = await supabaseAdmin
       .from("managers")
       .select("*")
