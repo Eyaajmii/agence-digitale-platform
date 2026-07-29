@@ -22,6 +22,7 @@ export interface AeoAudit {
   recommandations: AeoRecommendation[];
   created_at: string;
   updated_at: string;
+  contenu_brut:string;
 }
 
 export type MoteurIA = "perplexity" | "chatgpt" | "gemini" | "claude";
@@ -38,6 +39,7 @@ export interface AeoMonitoringRow {
   statut: StatutCitation;
   derniere_verif: string;
   evolution: string | null;
+  sources_json:string;
 }
 
 export interface GenerateAeoContentInput {

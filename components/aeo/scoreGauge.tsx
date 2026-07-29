@@ -27,9 +27,16 @@ export function ScoreGauge({
       <div className="relative h-[110px] w-[110px] shrink-0">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
           <defs>
-            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FF3D7F" />
-              <stop offset="100%" stopColor="#6C4CFF" />
+            <linearGradient
+              id="scoreGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor="#2563EB" />
+              <stop offset="50%" stopColor="#0EA5E9" />
+              <stop offset="100%" stopColor="#06B6D4" />
             </linearGradient>
           </defs>
           <circle
@@ -61,12 +68,17 @@ export function ScoreGauge({
 
       <div className="flex-1 space-y-3 pt-1">
         {CRITERIA_LABELS.map(({ key, label }) => (
-          <div key={key} className="grid grid-cols-[1fr_auto] items-center gap-3">
+          <div
+            key={key}
+            className="grid grid-cols-[1fr_auto] items-center gap-3"
+          >
             <div className="flex items-center gap-2">
-              <span className="w-40 shrink-0 text-xs text-[#6B6579]">{label}</span>
+              <span className="w-40 shrink-0 text-xs text-[#6B6579]">
+                {label}
+              </span>
               <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[#1A1720]/8">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF]"
+                  className="h-full rounded-full bg-blue-500"
                   style={{ width: `${details[key]}%` }}
                 />
               </div>

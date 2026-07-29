@@ -11,18 +11,29 @@ type Tab = "audit" | "generateur" | "monitoring";
 
 export default function AeoPage() {
   const [tab, setTab] = useState<Tab>("audit");
-  const { clients, selectedClient, loadingClients, handleClientChange } = useAeoClient();
+  const { clients, selectedClient, loadingClients, handleClientChange } =
+    useAeoClient();
 
   return (
-    <div className="space-y-6 font-[Inter,sans-serif]">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto font-[Inter,sans-serif]">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
+            AEO & GEO
+          </h1>
+            <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
+            Audit, génération de contenu optimisé et monitoring IA
+            </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#1A1720]/10 bg-white px-6 py-4">
+        
         <div className="flex items-center gap-3">
           {!loadingClients && clients.length > 0 && (
             <select
               value={selectedClient}
               onChange={(e) => handleClientChange(e.target.value)}
-              className="rounded-lg border border-[#1A1720]/10 bg-white px-3 py-2 text-sm font-medium text-[#1A1720] outline-none focus:border-[#6C4CFF]"
-            >
+              className="rounded-lg border border-[#1A1720]/10 bg-white px-3 py-1.5 text-sm font-medium text-[#1A1720] shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6C4CFF]/40"
+              >
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nom}
@@ -31,9 +42,7 @@ export default function AeoPage() {
             </select>
           )}
         </div>
-
-        <nav className="flex gap-1 rounded-full border border-[#1A1720]/10 bg-white p-1">
-          {[
+        <nav className="flex gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">          {[
             { id: "audit" as Tab, label: "Audit & Score" },
             { id: "generateur" as Tab, label: "Générateur" },
             { id: "monitoring" as Tab, label: "Monitoring" },
@@ -43,14 +52,15 @@ export default function AeoPage() {
               onClick={() => setTab(item.id)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 tab === item.id
-                  ? "bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] text-white"
-                  : "text-[#6B6579] hover:text-[#1A1720]"
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               {item.label}
             </button>
           ))}
         </nav>
+        </div>
       </header>
 
       {!selectedClient ? (
@@ -70,7 +80,7 @@ export default function AeoPage() {
 // Onglet 1 — Audit & Score
 // ---------------------------------------------------------------------------
 function AuditTab({ clientId }: { clientId: string }) {
-  const [url, setUrl] = useState("https://maisonDoree.fr");
+  const [url, setUrl] = useState("");
   const [audit, setAudit] = useState<AeoAudit | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +127,7 @@ function AuditTab({ clientId }: { clientId: string }) {
           <button
             onClick={handleAnalyse}
             disabled={loading || !url}
-            className="rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading ? "Analyse…" : "▷ Analyser"}
           </button>
@@ -129,7 +139,10 @@ function AuditTab({ clientId }: { clientId: string }) {
           <div>
             <ScoreLabel score={audit.score_aeo} />
             <div className="mt-3">
-              <ScoreGauge score={audit.score_aeo} details={audit.details_score} />
+              <ScoreGauge
+                score={audit.score_aeo}
+                details={audit.details_score}
+              />
             </div>
           </div>
         ) : (
@@ -147,7 +160,9 @@ function AuditTab({ clientId }: { clientId: string }) {
         </h2>
         <div className="space-y-3">
           {sortedRecos.length > 0 ? (
-            sortedRecos.map((reco, i) => <RecommendationCard key={i} recommandation={reco} />)
+            sortedRecos.map((reco, i) => (
+              <RecommendationCard key={i} recommandation={reco} />
+            ))
           ) : (
             <p className="text-sm text-[#9C96B5]">
               Les recommandations apparaîtront ici après l'analyse.
@@ -175,7 +190,7 @@ function GeneratorTab({ clientId }: { clientId: string }) {
     setError(null);
     setArticle("");
     try {
-      const res = await fetch("/api/aeo/generate", {
+      const res = await fetch("/api/aeo/generator", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clientId, sujet, angle, publicCible }),
@@ -234,7 +249,7 @@ function GeneratorTab({ clientId }: { clientId: string }) {
           <button
             onClick={handleGenerate}
             disabled={loading || !sujet || !publicCible}
-            className="mt-2 w-full rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="mt-2 w-full rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading ? "Génération…" : "Générer l'article"}
           </button>
@@ -252,7 +267,8 @@ function GeneratorTab({ clientId }: { clientId: string }) {
           </pre>
         ) : (
           <p className="text-sm text-[#9C96B5]">
-            L'article généré (définition, sections H2/H3, FAQ, données sourcées) s'affichera ici.
+            L'article généré (définition, sections H2/H3, FAQ, données sourcées)
+            s'affichera ici.
           </p>
         )}
       </section>
@@ -276,7 +292,13 @@ function GeneratorTab({ clientId }: { clientId: string }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <span className="mb-1 block font-[IBM_Plex_Mono,monospace] text-[10px] font-medium uppercase tracking-[0.1em] text-[#9C96B5]">
@@ -380,7 +402,7 @@ function MonitoringTab({ clientId }: { clientId: string }) {
         <button
           onClick={handleVerifier}
           disabled={loading || !nouvelleRequete}
-          className="rounded-lg bg-gradient-to-r from-[#FF3D7F] to-[#6C4CFF] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {loading ? "Vérification…" : "Vérifier maintenant"}
         </button>

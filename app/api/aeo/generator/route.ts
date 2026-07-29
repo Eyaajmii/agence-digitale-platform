@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin as supabase } from "@/lib/supabase/server";
 import { streamClaude } from "@/lib/claude/prompts";
+import { streamGroq } from "@/lib/groq/prompts";
 import type { GenerateAeoContentInput } from "@/types/aeo";
 
 export const runtime = "nodejs";
@@ -12,9 +13,15 @@ function buildSystemPrompt(client: {
   ton: string;
   mots_interdits: string | null;
 }) {
-  return `Tu es rédacteur spécialisé en AEO/GEO (AI Engine Optimization) pour l'agence digitale qui gère le client "${client.nom}" (secteur : ${client.secteur}).
+  return `Tu es rédacteur spécialisé en AEO/GEO (AI Engine Optimization) pour l'agence digitale qui gère le client "${
+    client.nom
+  }" (secteur : ${client.secteur}).
 Ton éditorial du client à respecter strictement : ${client.ton}.
-${client.mots_interdits ? `Mots/expressions interdits : ${client.mots_interdits}.` : ""}
+${
+  client.mots_interdits
+    ? `Mots/expressions interdits : ${client.mots_interdits}.`
+    : ""
+}
 
 Ta mission : rédiger un article structuré pour maximiser les chances d'être cité par des moteurs IA génératifs (ChatGPT, Perplexity, Gemini, Claude). Respecte impérativement cette structure :
 1. Une définition explicite du sujet en 2 phrases maximum, citable telle quelle.
@@ -43,10 +50,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !client) {
-    return NextResponse.json(
-      { error: "Client introuvable." },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "Client introuvable." }, { status: 404 });
   }
 
   const system = buildSystemPrompt(client);
@@ -54,9 +58,13 @@ export async function POST(req: NextRequest) {
 Angle éditorial souhaité : ${body.angle || "(libre, au meilleur jugement)"}
 Public cible : ${body.publicCible}`;
 
-  const claudeStream = await streamClaude({ system, prompt, maxTokens: 3000 });
-
-  const encoder = new TextEncoder();
+  //const claudeStream = await streamClaude({ system, prompt, maxTokens: 3000 });
+  const groqStream = await streamGroq({
+    system,
+    prompt,
+    maxTokens: 3000,
+  });
+  /*const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
       claudeStream.on("text", (chunk: string) => {
@@ -70,6 +78,26 @@ Public cible : ${body.publicCible}`;
     },
     cancel() {
       claudeStream.abort();
+    },
+  });*/
+  const encoder = new TextEncoder();
+
+  const readable = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of groqStream) {
+          const content = chunk.choices?.[0]?.delta?.content ?? "";
+
+          if (content) {
+            controller.enqueue(encoder.encode(content));
+          }
+        }
+
+        controller.close();
+      } catch (error) {
+        console.error("[/api/aeo/generate] stream error", error);
+        controller.error(error);
+      }
     },
   });
 
