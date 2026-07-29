@@ -1,265 +1,426 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
-import { getContents } from "@/lib/supabase/contents";
-import { getClients } from "@/lib/supabase/client";
-import { PLATFORM_LABELS } from "@/types/content";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
+import type { DateClickArg } from "@fullcalendar/interaction";
+import type { EventDropArg, EventClickArg } from "@fullcalendar/core";
+import {
+  getCalendrierEvents,
+  addCalendrierEvent,
+  updateEventDate,
+  updateEventStatut,
+  deleteCalendrierEvent,
+  getContenusValides,
+} from "@/lib/supabase/calendrier";
+import type { CalendrierEvent } from "@/types/calendrier";
 
 const PLATFORM_COLORS: Record<string, string> = {
-  Twitter: "bg-[#1DA1F2]/10 text-[#1DA1F2]",
-  Instagram: "bg-[#FF3D7F]/10 text-[#FF3D7F]",
-  Facebook: "bg-[#1877F2]/10 text-[#1877F2]",
-  Linkedin: "bg-[#0A66C2]/10 text-[#0A66C2]",
-  GoogleAds: "bg-[#D6A32C]/10 text-[#95721B]",
-  TikTok: "bg-[#1A1720]/10 text-[#1A1720]",
+  Instagram: "#FF3D7F",
+  Facebook: "#2D6FF2",
+  Twitter: "#6C4CFF",
+  Linkedin: "#2BB7C4",
+  GoogleAds: "#D6A32C",
+  TikTok: "#1A1720",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  Brouillon: "bg-amber-50 text-amber-700",
-  Approuvé: "bg-emerald-50 text-emerald-700",
-  Publié: "bg-[#6C4CFF]/10 text-[#6C4CFF]",
+const STATUT_COLORS: Record<string, string> = {
+  planifié: "#6C4CFF",
+  publié: "#3FAE6B",
+  annulé: "#FF3D7F",
 };
 
-function getInitials(name: string) {
-  return name
-    ?.split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join("");
-}
-
-
-
-export default function ContentsPage() {
-  const [contents, setContents] = useState<any[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [selectedClient, setSelectedClient] = useState("");
-
+export default function CalendrierPage() {
+  const [events, setEvents] = useState<CalendrierEvent[]>([]);
+  const [contenus, setContenus] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-
-  const loadContents = useCallback(
-    async (clientId = selectedClient, currentPage = page) => {
-      setLoading(true);
-
-      try {
-        const result = await getContents(
-          currentPage,
-          10,
-          clientId || undefined
-        );
-
-        setContents(result.data || []);
-        setTotalPages(result.total_pages || 1);
-        setTotal(result.total || 0);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [selectedClient, page]
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendrierEvent | null>(
+    null
   );
+  const [selectedContenu, setSelectedContenu] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const [evts, cnts] = await Promise.all([
+        getCalendrierEvents(),
+        getContenusValides(),
+      ]);
+      setEvents(evts);
+      setContenus(cnts);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    loadContents();
+    load();
+  }, [load]);
+  useEffect(() => {
+    const style = document.createElement("style");
 
-    getClients(1, 100).then((res) => {
-      setClients(res.data || []);
-    });
-  }, [loadContents]);
+    style.innerHTML = `
+      .fc {
+        font-family: Inter,sans-serif;
+      }
+  
+      .fc-toolbar-title {
+        font-family: Space Grotesk,sans-serif;
+        font-weight: 700;
+        color: #1A1720;
+      }
+  
+      .fc-button {
+        background: white !important;
+        border: 1px solid rgba(26,23,32,.1) !important;
+        color: #6B6579 !important;
+        box-shadow: none !important;
+      }
+  
+      .fc-button:hover {
+        background: #F4F5F1 !important;
+      }
+  
+      .fc-button-active {
+        background: blue !important;
+        color: white !important;
+        border-color: blue !important;
+      }
+  
+      .fc-daygrid-day:hover {
+        background: rgba(255,61,127,.03);
+      }
+  
+      .fc-col-header-cell {
+        background: #F4F5F1;
+        color: #9C96B5;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-family: IBM Plex Mono, monospace;
+      }
+  
+      .fc-event {
+        border-radius: 8px;
+        border: none !important;
+        padding: 2px 6px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+  
+      .fc-day-today {
+        background: rgba(108,76,255,.05) !important;
+      }
+    `;
+
+    document.head.appendChild(style);
+
+    return () => void document.head.removeChild(style);
+  }, []);
+  // Convertir les events pour FullCalendar
+  const fcEvents = events.map((e) => ({
+    id: e.id,
+    title: `${e.contenus?.plateforme?.toUpperCase()} — ${e.clients?.nom ?? ""}`,
+    date: e.date,
+    backgroundColor: PLATFORM_COLORS[e.contenus?.plateforme ?? ""] ?? "#7F77DD",
+    borderColor: STATUT_COLORS[e.statut] ?? "#7F77DD",
+    extendedProps: { event: e },
+  }));
+
+  // Clic sur une date → ouvrir modal pour planifier
+  const handleDateClick = (arg: DateClickArg) => {
+    setSelectedDate(arg.dateStr);
+    setSelectedEvent(null);
+    setSelectedContenu("");
+    setShowModal(true);
+  };
+
+  // Clic sur un event → voir détail
+  const handleEventClick = (arg: EventClickArg) => {
+    const e = arg.event.extendedProps.event as CalendrierEvent;
+    setSelectedEvent(e);
+    setSelectedDate(null);
+    setShowModal(true);
+  };
+
+  // Drag & drop → mise à jour optimiste de la date
+  const handleEventDrop = async (arg: EventDropArg) => {
+    const eventId = arg.event.id;
+    const newDate = arg.event.startStr;
+
+    // Mise à jour optimiste
+    setEvents((prev) =>
+      prev.map((e) => (e.id === eventId ? { ...e, date: newDate } : e))
+    );
+
+    try {
+      await updateEventDate(eventId, newDate);
+    } catch {
+      // Rollback si erreur
+      arg.revert();
+      await load();
+    }
+  };
+
+  // Planifier un contenu
+  const handlePlanifier = async () => {
+    if (!selectedDate || !selectedContenu) return;
+    setSaving(true);
+    try {
+      const contenu = contenus.find((c) => c.id === selectedContenu);
+      if (!contenu) return;
+      const newEvent = await addCalendrierEvent(
+        selectedContenu,
+        contenu.client_id,
+        selectedDate
+      );
+      setEvents((prev) => [...prev, newEvent]);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Changer statut
+  const handleStatut = async (statut: CalendrierEvent["statut"]) => {
+    if (!selectedEvent) return;
+    await updateEventStatut(selectedEvent.id, statut);
+    setEvents((prev) =>
+      prev.map((e) => (e.id === selectedEvent.id ? { ...e, statut } : e))
+    );
+    setSelectedEvent((prev) => (prev ? { ...prev, statut } : prev));
+  };
+
+  // Supprimer
+  const handleDelete = async () => {
+    if (!selectedEvent) return;
+    if (!confirm("Supprimer cet événement ?")) return;
+    await deleteCalendrierEvent(selectedEvent.id);
+    setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
+    setShowModal(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 p-6 max-w-6xl mx-auto font-[Inter,sans-serif]">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-[Space_Grotesk,sans-serif] font-bold text-[#1A1720] tracking-tight">
-            Liste des contenus générés
+            Calendrier éditorial
           </h1>
 
-          <p className="mt-0.5 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
-            {total} contenu{total !== 1 ? "s" : ""}
+          <p className="mt-1 text-sm text-[#6B6579] font-[IBM_Plex_Mono,monospace]">
+            Planification et suivi des publications
           </p>
         </div>
 
-        <Link
-          href="/dashboard/generate/addContent"
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-          + Générer contenu
-        </Link>
-      </div>
-
-      {/* Filtres */}
-      <div className="rounded-xl border border-[#1A1720]/10 bg-white p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <select
-            value={selectedClient}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setSelectedClient(value);
-              setPage(1);
-
-              loadContents(value, 1);
-            }}
-            className="rounded-lg border border-[#1A1720]/10 bg-white px-3 py-2 text-sm outline-none focus:border-[#FF3D7F] focus:ring-2 focus:ring-[#FF3D7F]/15"
-          >
-            <option value="">Tous les clients</option>
-
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.nom}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Loader */}
-      {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF3D7F] border-t-transparent" />
-        </div>
-      ) : contents.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[#1A1720]/15 py-20 text-center">
-          <p className="text-[#9C96B5] text-sm">
-            Aucun contenu trouvé.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-  {contents.map((content) => (
-    <div
-      key={content.id}
-      className="
-      bg-white
-      border
-      border-slate-200
-      rounded-2xl
-      p-5
-      shadow-sm
-      hover:shadow-md
-      transition-all
-      "
-    >
-      <div className="flex items-start justify-between gap-4">
-        {/* Partie gauche */}
-        <div className="flex items-center gap-4">
-         
-            {getInitials(content.clients?.nom || "Client")}
-
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              {content.clients?.nom || "Client"}
-            </h3>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  PLATFORM_COLORS[content.plateforme] ||
-                  "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {PLATFORM_LABELS[
-                  content.plateforme as keyof typeof PLATFORM_LABELS
-                ] || content.plateforme}
-              </span>
-
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  STATUS_COLORS[content.statut] ||
-                  "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {content.statut}
+        <div className="flex flex-wrap items-center gap-3">
+          {Object.entries(STATUT_COLORS).map(([s, c]) => (
+            <div
+              key={s}
+              className="flex items-center gap-2 rounded-full bg-white border border-[#1A1720]/10 px-3 py-1.5"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: c }}
+              />
+              <span className="text-xs text-[#6B6579] capitalize font-[IBM_Plex_Mono,monospace]">
+                {s}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Action */}
-        <Link
-          href={`/dashboard/generate/${content.id}`}
-          className="
-          rounded-lg
-          border
-          border-slate-200
-          px-3
-          py-2
-          text-sm
-          hover:bg-slate-50
-          "
-        >
-          Voir
-        </Link>
-      </div>
-
-      {/* Infos */}
-      <div className="mt-5 grid gap-4 border-t border-slate-100 pt-4 md:grid-cols-2">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Objectif
-          </p>
-
-          <p className="mt-1 text-sm text-slate-700 line-clamp-3">
-            {content.objective || "—"}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Date de création
-          </p>
-
-          <p className="mt-1 text-sm text-slate-700">
-            {new Date(content.created_at).toLocaleDateString("fr-FR", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
+          ))}
         </div>
       </div>
-    </div>
-  ))}
-</div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-[#9C96B5] font-[IBM_Plex_Mono,monospace]">
-            Page {page} / {totalPages}
-          </p>
+      {/* Calendrier */}
+      <div className="overflow-hidden rounded-2xl border border-[#1A1720]/10 bg-white p-5">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+          initialView="dayGridMonth"
+          locale="fr"
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,listWeek",
+          }}
+          events={fcEvents}
+          editable={true}
+          droppable={true}
+          dateClick={handleDateClick}
+          eventClick={handleEventClick}
+          eventDrop={handleEventDrop}
+          height="auto"
+          eventDisplay="block"
+          dayMaxEvents={3}
+        />
+      </div>
 
-          <div className="flex gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => {
-                const p = page - 1;
-                setPage(p);
-                loadContents(selectedClient, p);
-              }}
-              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
-            >
-              ← Précédent
-            </button>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="relative overflow-hidden rounded-3xl border border-[#1A1720]/10 bg-white p-6 w-full max-w-lg space-y-5">
+            {/* Modal — Planifier */}
+            {selectedDate && !selectedEvent && (
+              <>
+                <h2 className="text-base font-semibold text-zinc-900">
+                  Planifier un contenu
+                </h2>
+                <p className="text-sm text-zinc-500">
+                  Date : <strong>{selectedDate}</strong>
+                </p>
 
-            <button
-              disabled={page === totalPages}
-              onClick={() => {
-                const p = page + 1;
-                setPage(p);
-                loadContents(selectedClient, p);
-              }}
-              className="rounded-lg border border-[#1A1720]/10 px-3 py-1.5 text-[#6B6579] hover:bg-[#1A1720]/5 disabled:opacity-40 transition-colors"
-            >
-              Suivant →
-            </button>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-zinc-700">
+                    Contenu validé
+                  </label>
+                  <select
+                    value={selectedContenu}
+                    onChange={(e) => setSelectedContenu(e.target.value)}
+                    className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  >
+                    <option value="">— Choisir un contenu —</option>
+                    {contenus.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        [{c.plateforme}] {c.clients?.nom} —{" "}
+                        {c.texte?.slice(0, 50) ?? ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {contenus.length === 0 && (
+                  <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                    Aucun contenu validé. Validez d'abord une variante dans le
+                    Générateur.
+                  </p>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handlePlanifier}
+                    disabled={!selectedContenu || saving}
+                    className="flex-1 rounded-xl bg-blue-500 py-2.5 text-sm font-medium text-white hover:bg-blue-400 transition-colors disabled:opacity-40"
+                  >
+                    {saving ? "Planification…" : "Planifier"}
+                  </button>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 rounded-xl border border-[#1A1720]/10 py-2.5 text-sm font-medium text-[#6B6579] hover:bg-[#F4F5F1] transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Modal — Détail event */}
+            {selectedEvent && (
+              <>
+                <h2 className="text-base font-semibold text-zinc-900">
+                  Détail du contenu planifié
+                </h2>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400">Client :</span>
+                    <span className="font-medium">
+                      {selectedEvent.clients?.nom}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400">Plateforme :</span>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-white text-xs font-medium"
+                      style={{
+                        background:
+                          PLATFORM_COLORS[
+                            selectedEvent.contenus?.plateforme ?? ""
+                          ] ?? "#7F77DD",
+                      }}
+                    >
+                      {selectedEvent.contenus?.plateforme}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400">Objective :</span>
+                    <span className="font-medium">
+                      {selectedEvent.contenus?.objective}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400">Date :</span>
+                    <span>
+                      {new Date(selectedEvent.date).toLocaleDateString(
+                        "fr-FR",
+                        { day: "numeric", month: "long", year: "numeric" }
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400">Texte :</span>
+                    <p className="mt-2 rounded-xl border border-[#1A1720]/10 bg-[#F4F5F1] p-4 text-sm leading-relaxed text-[#1A1720] whitespace-pre-wrap">
+                      {selectedEvent.contenus?.texte}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Changer statut */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                    Statut
+                  </p>
+                  <div className="flex gap-2">
+                    {(["planifié", "publié", "annulé"] as const).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => handleStatut(s)}
+                        className={`flex-1 rounded-xl py-2 text-xs font-medium transition-all ${
+                          selectedEvent.statut === s
+                            ? "text-white shadow-sm"
+                            : "border border-[#1A1720]/10 text-[#6B6579] hover:bg-[#F4F5F1]"
+                        }`}
+                        style={
+                          selectedEvent.statut === s
+                            ? { background: STATUT_COLORS[s] }
+                            : {}
+                        }
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 border border-red-100 text-red-500 text-sm font-medium py-2.5 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    Supprimer
+                  </button>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 border border-zinc-200 text-zinc-600 text-sm font-medium py-2.5 rounded-lg hover:bg-zinc-50 transition-colors"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
