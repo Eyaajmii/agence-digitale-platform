@@ -84,7 +84,7 @@ export default function NewClientPage() {
     "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
   const labelClass = "mb-1 block text-sm font-medium text-slate-700";
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="space-y-6">
       {" "}
       {/* Header */}
       <div className="mb-6">

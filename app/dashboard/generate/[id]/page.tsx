@@ -95,7 +95,7 @@ export default function ContentDetailPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6 font-[Inter,sans-serif]">
+    <div className="space-y-6 font-[Inter,sans-serif]">
       <div className="flex items-center gap-2">
       <Link
           href="/dashboard/generate"
