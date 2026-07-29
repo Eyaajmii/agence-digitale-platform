@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -41,10 +41,26 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { data: session, status } = useSession();
   const user = session?.user;
   const userId = session?.user?.id ?? "";
+  const profileRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const displayName = user?.name ? ` ${user.name}` : user?.name ?? "Manager";
 
   const initials = user?.name
@@ -172,21 +188,109 @@ export default function DashboardLayout({
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <NotificationDropdown userId={userId} />
-            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-gray-200">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[#1A1720] max-w-[160px] truncate">
-                  {displayName}
-                </p>
-                <p className="text-[10px] text-slate-500 font-[IBM_Plex_Mono,monospace] uppercase tracking-wider">
-                  {roleLabel}
-                </p>
+          <div className="relative">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="
+      w-11 h-11
+      rounded-full
+      bg-blue-600
+      flex items-center justify-center
+      text-white
+      font-bold
+      font-[Space_Grotesk,sans-serif]
+      hover:bg-blue-700
+      transition-colors
+    "
+            >
+              {initials}
+            </button>
+
+            {profileOpen && (
+              <div
+                className="
+        absolute
+        right-0
+        top-14
+        z-50
+        w-72
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        shadow-xl
+        overflow-hidden
+      "
+              >
+                <div className="p-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                      {initials}
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {displayName}
+                      </p>
+
+                      <p className="text-sm text-slate-500">{roleLabel}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2">
+                  <Link
+                    href="/dashboard/profil"
+                    className="
+            flex
+            items-center
+            gap-3
+            rounded-xl
+            px-3
+            py-2.5
+            text-sm
+            text-slate-700
+            hover:bg-slate-50
+          "
+                  >
+                    Mon profil
+                  </Link>
+
+                  <Link
+                    href="/dashboard/settings"
+                    className="
+            flex
+            items-center
+            gap-3
+            rounded-xl
+            px-3
+            py-2.5
+            text-sm
+            text-slate-700
+            hover:bg-slate-50
+          "
+                  >
+                    Paramètres
+                  </Link>
+
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                    className="
+            w-full
+            text-left
+            rounded-xl
+            px-3
+            py-2.5
+            text-sm
+            text-red-600
+            hover:bg-red-50
+          "
+                  >
+                    Déconnexion
+                  </button>
+                </div>
               </div>
-              <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold font-[Space_Grotesk,sans-serif]">
-                {initials}
-              </div>
-            </div>
+            )}
           </div>
         </header>
 
