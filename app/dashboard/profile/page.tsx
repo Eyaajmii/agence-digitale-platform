@@ -247,7 +247,7 @@ export default function ProfilePage() {
               />
             </div>
           </div>
-          {profile.role === "manager" && manager && (
+          {profile.role === "Manager" && manager && (
             <div className="border-t border-slate-200 p-8">
               <h3 className="mb-6 text-lg font-semibold text-slate-900">
                 Informations de l'agence
