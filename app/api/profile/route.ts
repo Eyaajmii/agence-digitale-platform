@@ -58,7 +58,6 @@ export async function PUT(req: NextRequest) {
     prenom,
     telephone,
     poste,
-    bio,
     ville,
     pays,
     role,
@@ -92,7 +91,7 @@ export async function PUT(req: NextRequest) {
 
   let manager = null;
 
-  if (role === "manager") {
+  if (role === "Manager") {
     const { data: managerData, error: managerError } =
       await supabaseAdmin
         .from("managers")
