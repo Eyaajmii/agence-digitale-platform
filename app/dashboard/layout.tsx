@@ -240,7 +240,7 @@ export default function DashboardLayout({
 
                 <div className="p-2">
                   <Link
-                    href="/dashboard/profil"
+                    href="/dashboard/profile"
                     className="
             flex
             items-center
