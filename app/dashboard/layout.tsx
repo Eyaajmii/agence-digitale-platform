@@ -187,7 +187,8 @@ export default function DashboardLayout({
               {activeLabel}
             </h1>
           </div>
-
+          <div className="flex items-center gap-4">
+          <NotificationDropdown userId={userId} />
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -274,6 +275,7 @@ export default function DashboardLayout({
                 </div>
               </div>
             )}
+          </div>
           </div>
         </header>
 
