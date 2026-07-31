@@ -17,6 +17,9 @@ import {
   X,
   Loader2,
   AlertTriangle,
+  CheckCircle2,
+  CalendarCheck2,
+  AlertCircle,
 } from "lucide-react";
 import {
   FaTwitter,
@@ -25,6 +28,7 @@ import {
   FaLinkedin,
   FaTiktok,
 } from "react-icons/fa";
+import { SuccessAlert } from "@/components/ui/success-alert";
 const PLATFORMS = [
   { value: "Twitter", label: "Twitter / X", icon: FaTwitter, maxChars: 280 },
   { value: "Instagram", label: "Instagram", icon: FaInstagram, maxChars: 2200 },
@@ -59,7 +63,7 @@ export default function GeneratePage() {
     isStreaming,
     error,
   } = useGenerate();
-
+  const [success, setSuccess] = useState(false);
   useEffect(() => {
     getClients(1, 100).then((res) => {
       setClients(res.data || []);
@@ -102,7 +106,8 @@ export default function GeneratePage() {
   const handleValidate = async (text: string, index: number) => {
     try {
       await saveContenu(text, index);
-      alert(`Variante ${index + 1} enregistrée !`);
+      //alert(`Variante ${index + 1} enregistrée !`);
+      setSuccess(true);
     } catch (err) {
       console.error(err);
     }
@@ -165,11 +170,11 @@ transition-all
         </Link>
 
         <h1 className="mt-2 text-3xl font-bold text-slate-900">
-        Générateur de contenu IA
+          Générateur de contenu IA
         </h1>
 
         <p className="mt-1 text-slate-500">
-        Crée automatiquement plusieurs variantes de contenu marketing.
+          Crée automatiquement plusieurs variantes de contenu marketing.
         </p>
       </div>
       {error && (
@@ -276,9 +281,20 @@ transition-all
 
       {/* Error */}
       {error && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          {error}
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-red-900">
+                Une erreur est survenue
+              </h3>
+
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -366,6 +382,12 @@ transition-all
           </div>
         </div>
       )}
+      {success && (
+        <SuccessAlert
+        title="Contenu validé"
+        message="Le contenu a été enregistré et approuvé avec succès."
+      />
+      )}
 
       {/* Modale de planification */}
       {planningIndex !== null && (
@@ -417,6 +439,12 @@ transition-all
             </div>
           </div>
         </div>
+      )}
+      {planning && (
+        <SuccessAlert
+        title="Publication planifiée"
+        message="Le contenu a été ajouté au calendrier de publication."
+        />
       )}
     </div>
   );
